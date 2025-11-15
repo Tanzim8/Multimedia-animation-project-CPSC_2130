@@ -1,0 +1,143 @@
+/* ============================
+   GLOBAL
+============================ */
+html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: white;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* ============================
+   TOP NAVIGATION
+============================ */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 12px 24px;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+
+    z-index: 20;
+
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.top-nav h1 {
+    margin: 0;
+    font-size: 24px;
+    letter-spacing: 1px;
+}
+
+.top-nav nav a {
+    margin-left: 24px;
+    color: #AEEAFF;
+    text-decoration: none;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.top-nav nav a:hover {
+    color: #fff;
+}
+
+/* ============================
+   CANVAS AREA
+============================ */
+.canvas-area {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+
+    /* Prevent overlap with fixed nav */
+    padding-top: 60px;
+}
+
+/* Force canvas to fill screen without stretching */
+#waterCanvas {
+    width: 100%;
+    height: calc(100vh - 60px);
+    display: block;
+}
+
+/* ============================
+   POEM TEXT
+============================ */
+.poem-text {
+    position: absolute;
+    bottom: 14%;
+    width: 100%;
+    text-align: center;
+
+    font-size: 24px;
+    line-height: 1.5;
+
+    pointer-events: none;
+
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+
+/* Larger screens get bigger poem text */
+@media (min-width: 1200px) {
+    .poem-text {
+        font-size: 32px;
+    }
+}
+
+/* ============================
+   SCENE CONTROLS
+============================ */
+.controls {
+    position: absolute;
+    bottom: 6%;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+
+    font-size: 22px;
+}
+
+.controls button {
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid #fff;
+
+    color: white;
+    font-size: 18px;
+
+    cursor: pointer;
+    border-radius: 4px;
+
+    transition: background 0.3s ease;
+}
+
+.controls button:hover {
+    background: rgba(255,255,255,0.35);
+}
+
+/* On very large screens, scale controls slightly */
+@media (min-width: 1200px) {
+    .controls button {
+        font-size: 22px;
+        padding: 12px 24px;
+    }
+}
+

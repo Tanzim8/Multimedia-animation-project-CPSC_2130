@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tides & Echoes – Interactive Poem of Water</title>
+
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <h1>Tides & Echoes</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="gallery.html">Gallery</a>
+        </nav>
+    </header>
+
+    <!-- Canvas Container -->
+    <section class="canvas-area">
+        <canvas id="waterCanvas"></canvas>
+
+        <!-- Poetic Text Overlay -->
+        <div id="poemText" class="poem-text">
+            <!-- JS will insert scene-specific poetic lines here -->
+        </div>
+
+        <!-- Scene Navigation -->
+        <div class="controls">
+            <button id="prevScene">◀</button>
+            <span id="sceneName">Rain</span>
+            <button id="nextScene">▶</button>
+        </div>
+    </section>
+
+    <!-- Audio (Scene-Dependent) -->
+    <audio id="bgAudio" loop></audio>
+
+    <!-- External JavaScript -->
+    <script src="js/script.js"></script>
+</body>
+</html>
