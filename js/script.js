@@ -58,77 +58,88 @@ let CAR_H = 0;
 
 let lastCarSpawn = 0;
 
+
+let carImages = [];
+let carFiles = [
+    "assets/cars/BlueCarR.png",
+    "assets/cars/GreenCarNew.png",
+    "assets/cars/TruckNewB.png",
+    "assets/cars/CabNewB.png"
+];
+
+
 function loadCarSprites() {
-    carSheet = new Image();
-    carSheet.src = "assets/cars/carSprites.png";
+    carImages = [];
 
-    carSheet.onload = () => {
-        CAR_W = carSheet.width / CAR_COLS;
-        CAR_H = carSheet.height / CAR_ROWS;
-
-        sideCars = [];
-
-        // ROW 0 = right-facing, ROW 1 = left-facing
-        for (let row = 0; row < CAR_ROWS; row++) {
-            for (let col = 0; col < CAR_COLS; col++) {
-                sideCars.push({
-                    sx: col * CAR_W,
-                    sy: row * CAR_H,
-                    dir: row === 0 ? 1 : -1
-                });
-            }
-        }
-    };
+    for (let src of carFiles) {
+        let img = new Image();
+        img.src = src;
+        carImages.push(img);
+    }
 }
 loadCarSprites();
 
+
 function spawnCar() {
-    if (sideCars.length === 0) return;
+    if (carImages.length === 0) return;
 
-    const frame = sideCars[Math.floor(Math.random() * sideCars.length)];
-    const goingRight = frame.dir === 1;
+    const img = carImages[Math.floor(Math.random() * carImages.length)];
 
-    let scale = 0.35;
+    const goingRight = Math.random() > 0.5;
+    const scale = 0.15;
+
+    const w = img.width * scale;
+    const h = img.height * scale;
+
+    // TWO LANES
+    const laneLeftToRight  = canvas.height - 150;   // Upper lane
+    const laneRightToLeft  = canvas.height - 80;   // Lower lane (slightly down)
+
+    // Pick lane based on direction
+    const y = goingRight ? laneLeftToRight : laneRightToLeft;
 
     cars.push({
-        frame,
-        x: goingRight ? -200 : canvas.width + 200,
-        y: canvas.height - 140 + (Math.random() * 20 - 10),
-        w: CAR_W * scale,
-        h: CAR_H * scale,
-        dir: frame.dir,
-        speed: 2 + Math.random() * 3
+        img,
+        x: goingRight ? -w - 50 : canvas.width + 50,
+        y: y + (Math.random() * 8 - 4),  // small random variation
+        w,
+        h,
+        dir: goingRight ? 1 : -1,
+        speed: 3 + Math.random() * 2
     });
 }
+
 
 function drawCar(c) {
     ctx.save();
     ctx.translate(c.x, c.y);
-    ctx.scale(c.dir, 1);
 
-    ctx.drawImage(
-        carSheet,
-        c.frame.sx, c.frame.sy,
-        CAR_W, CAR_H,
-        -c.w / 2, -c.h / 2,
-        c.w, c.h
-    );
+    if (c.dir === -1) {
+        ctx.scale(-1, 1); // flip horizontally
+    }
 
+    ctx.drawImage(c.img, -c.w / 2, -c.h / 2, c.w, c.h);
     ctx.restore();
 }
 
+
+
 function updateCars() {
-    if (performance.now() - lastCarSpawn > 2500 + Math.random() * 1500) {
+    // Spawn timing
+    if (performance.now() - lastCarSpawn > 2500 + Math.random() * 2000) {
         spawnCar();
         lastCarSpawn = performance.now();
     }
 
+    // Move cars
     for (let c of cars) {
         c.x += c.speed * c.dir;
     }
 
+    // Remove off-screen
     cars = cars.filter(c => c.x > -400 && c.x < canvas.width + 400);
 
+    // Draw them
     for (let c of cars) {
         drawCar(c);
     }
