@@ -33,7 +33,7 @@
       color: #125e8a;
     }
 
-    .hero {
+    .mainElem {
       position: relative;
       height: 60vh;
       display: flex;
@@ -44,7 +44,7 @@
       overflow: hidden;
       gap: 1.5rem;
     }
-    .hero::before {
+    .mainElem::before {
       content: "";
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -59,25 +59,25 @@
       from { transform: scale(1.1); }
       to { transform: scale(1.2); }
     }
-    .hero-content {
+    .mainElem-content {
       position: relative;
       color: #fff;
       max-width: 800px;
       padding: 0 1rem;
     }
-    .hero-content h2 {
+    .mainElem-content h2 {
       font-size: 2rem;
       margin-bottom: 0.5rem;
       text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
-    .hero-content p {
+    .mainElem-content p {
       font-size: 1.2rem;
       opacity: 0.9;
       text-shadow: 0 1px 6px rgba(0,0,0,0.5);
       margin-bottom: 1rem;
     }
 
-    .cta-button {
+    .img-button {
       display: inline-block;
       padding: 1rem 2rem;
       font-size: 1.2rem;
@@ -90,7 +90,7 @@
       transition: background 0.3s, transform 0.2s;
       text-decoration: none;
     }
-    .cta-button:hover {
+    .img-button:hover {
       background-color: #0f496d;
       transform: scale(1.05);
     }
@@ -196,12 +196,12 @@
     <h1>Water Forms — A Poetic Journey</h1>
   </header>
 
-  <section class="hero">
-    <div class="hero-content">
+  <section class="mainElem">
+    <div class="mainElem-content">
       <h2>In the Quiet Flow of Water Lies a Poem</h2>
       <p>“All the water below me came from above … the sea remembers and sings back from the depth where nothing is forgotten.”</p>
       <!-- Button moved here -->
-      <a href="index.html" class="cta-button">Click Here to Start Your Journey</a>
+      <a href="index.html" class="img-button">Click Here to Start Your Journey</a>
     </div>
     <div class="waves"></div>
   </section>
