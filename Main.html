@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Forms — A Poetic Journey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Merriweather', serif;
+      line-height: 1.6;
+      color: #222;
+      background: #f4f7f6;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 2rem 1rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #ddd;
+    }
+    header h1 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 2.5rem;
+      color: #125e8a;
+    }
+
+    .hero {
+      position: relative;
+      height: 60vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      gap: 1.5rem;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
+      opacity: 0.6;
+      filter: blur(4px);
+      transform: scale(1.1);
+      animation: slowZoom 30s infinite alternate;
+      z-index: -1;
+    }
+    @keyframes slowZoom {
+      from { transform: scale(1.1); }
+      to { transform: scale(1.2); }
+    }
+    .hero-content {
+      position: relative;
+      color: #fff;
+      max-width: 800px;
+      padding: 0 1rem;
+    }
+    .hero-content h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .hero-content p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+      margin-bottom: 1rem;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      background-color: #125e8a;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      text-decoration: none;
+    }
+    .cta-button:hover {
+      background-color: #0f496d;
+      transform: scale(1.05);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+      position: relative;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeInUp 1s forwards;
+    }
+    .card:nth-child(1) { animation-delay: 0.2s; }
+    .card:nth-child(2) { animation-delay: 0.4s; }
+    .card:nth-child(3) { animation-delay: 0.6s; }
+    .card:nth-child(4) { animation-delay: 0.8s; }
+
+    @keyframes fadeInUp {
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+    .card:hover img {
+      transform: scale(1.05);
+    }
+    .card-content {
+      padding: 1.5rem;
+    }
+    .card-content h3 {
+      margin-bottom: 1rem;
+      color: #125e8a;
+      font-size: 1.5rem;
+    }
+    .card-content p {
+      color: #444;
+      font-size: 1rem;
+    }
+
+    section#about {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 0 1rem;
+    }
+    section#about h2 {
+      color: #125e8a;
+      font-family: 'Open Sans', sans-serif;
+      margin-bottom: 1rem;
+    }
+    section#about p {
+      margin-bottom: 1rem;
+      color: #444;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      margin-top: 4rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .waves {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 200%;
+      height: 200px;
+      background: url('data:image/svg+xml;utf8,\
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200">\
+          <path d="M0 67 C 300 200 900 0 1200 67 L1200 200 L0 200 Z" fill="%23ffffff" fill-opacity="0.8"/>\
+        </svg>'
+      ) repeat-x;
+      animation: waveMove 20s linear infinite;
+      transform: translate3d(0, 0, 0);
+      z-index: -1;
+    }
+    @keyframes waveMove {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Water Forms — A Poetic Journey</h1>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h2>In the Quiet Flow of Water Lies a Poem</h2>
+      <p>“All the water below me came from above … the sea remembers and sings back from the depth where nothing is forgotten.”</p>
+      <!-- Button moved here -->
+      <a href="index.html" class="cta-button">Click Here to Start Your Journey</a>
+    </div>
+    <div class="waves"></div>
+  </section>
+
+  <section class="container">
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80" alt="Ocean Waves">
+      <div class="card-content">
+        <h3>Waves</h3>
+        <p>The rolling, rhythmic rise and fall of waves evokes the breath of the earth — a constant, fluid dialogue between sea and sky.</p>
+      </div>
+    </div>
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80" alt="River Flow">
+      <div class="card-content">
+        <h3>River</h3>
+        <p>Rivers carve their way through landscapes as life carves meaning through the soul. They whisper about journey, transformation, and persistence.</p>
+      </div>
+    </div>
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=800&q=80" alt="Rain">
+      <div class="card-content">
+        <h3>Rain</h3>
+        <p>Gentle or stormy, rain cleanses. It is a soft return, a gift returning from the sky, bringing renewal in every drop.</p>
+      </div>
+    </div>
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=800&q=80" alt="Lake or Ocean Calm">
+      <div class="card-content">
+        <h3>Still Water</h3>
+        <p>When water lies still, it reflects. In its calmness, of the world and of ourselves, we find clarity and silent truth.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2>About This Poetry</h2>
+    <p>Like the poet David Whyte, this site draws inspiration from the deep metaphors of nature. His work often weaves together themes of belonging, loss, and the elemental beauty of life.</p>
+    <p>Here, water is more than physical: it is symbolism. The ocean, the rain, the rivers—they are invitations to reflect on our inner currents and the beauty in flowing forward.</p>
+  </section>
+
+  <footer>
+    &copy; 2025 Water Forms Poetry. Inspired by the spirit of David Whyte.
+  </footer>
+
+</body>
+</html>

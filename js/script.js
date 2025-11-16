@@ -280,17 +280,158 @@ function drawRiver() {
     ctx.fill();
 }
 
-function drawOcean() {
+// ==========================
+// UNDERWATER OCEAN + FISH
+// ==========================
+
+
+
+let fishImagePaths = [
+    { src: "images/fish.png", dir: 1 },
+    { src: "images/fish2.png", dir:-1},
+    { src: "images/fish3.png", dir:-1},
+    { src: "images/fish5.png", dir:-1}
+
+];
+
+let fishImages = [];
+
+function loadFishImages() {
+    fishImages = [];
+
+    for (let f of fishImagePaths) {
+        const img = new Image();
+        img.src = f.src;
+
+        fishImages.push({
+            img: img,
+            orgDir: f.dir
+        });
+    }
+}
+loadFishImages();
+
+
+
+
+
+
+
+
+let underwaterVideo = document.createElement("video");
+underwaterVideo.src = "images/ocean.mp4";
+underwaterVideo.loop = true;
+underwaterVideo.muted = true;
+underwaterVideo.autoplay = true;
+underwaterVideo.playsInline = true;
+
+let underwaterVideoReady = false;
+
+underwaterVideo.addEventListener("canplay", () => {
+    underwaterVideoReady = true;
+    underwaterVideo.play(); 
+});
+
+
+
+
+
+let fishList = [];
+let FISH_COUNT = 10;
+
+function initFish() {
+    fishList = [];
+
+    for (let i = 0; i < FISH_COUNT; i++) {
+        const fishData = fishImages[Math.floor(Math.random() * fishImages.length)];
+
+        fishList.push({
+            img: fishData.img,
+            orgDir: fishData.orgDir,
+            moveDir: Math.random() < 0.5 ? 1 : -1,  
+            x: Math.random() * canvas.width,
+            y: canvas.height * 0.4 + Math.random() * canvas.height * 0.4,
+            speed: 0.5 + Math.random() * 1.5,
+            size: 40 + Math.random() * 40
+        });
+    }
+}
+
+
+
+
+function drawFish(f) {
+    ctx.save();
+    ctx.translate(f.x, f.y);
+
+    let flip = (f.moveDir === f.orgDir) ? 1 : -1;
+    ctx.scale(flip, 1);
+
+    ctx.drawImage(
+        f.img,
+        -f.size / 2,
+        -f.size / 2,
+        f.size,
+        f.size
+    );
+
+    ctx.restore();
+}
+function updateFish() {
+    for (let f of fishList) {
+        f.x += f.speed * f.moveDir;
+
+        if (f.x > canvas.width + 60)
+            f.x = -60;
+        if (f.x < -60)
+            f.x = canvas.width + 60;
+    }
+}
+
+
+
+
+function drawUnderwater() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const t = performance.now() * 0.001;
-    let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, `rgba(${30 + Math.sin(t)*20},70,180,0.6)`);
-    grad.addColorStop(1, `rgba(10,20,80,0.9)`);
+    
+    if (underwaterVideoReady) {
+        ctx.drawImage(underwaterVideo, 0, 0, canvas.width, canvas.height);
+    }
 
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    updateFish();
+    for (let f of fishList) drawFish(f);
+    if (fishList.length === 0) {
+    initFish(); 
 }
+}
+
+canvas.addEventListener("click", (e) => {
+    
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    
+    for (let i = fishList.length - 1; i >= 0; i--) {
+        const f = fishList[i];
+
+        
+        const left = f.x - f.size / 2;
+        const right = f.x + f.size / 2;
+        const top = f.y - f.size / 2;
+        const bottom = f.y + f.size / 2;
+
+        
+        if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom) {
+            fishList.splice(i, 1); 
+            break; 
+        }
+    }
+});
+
+
 
 function drawWaves() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -324,21 +465,21 @@ const scenes = [
         name: "River",
         poem: "Flowing gently with time,\ncarrying echoes of the earth.",
         audio: "audio/river.mp3",
-        setup: () => {},
+        setup: () => { },
         draw: drawRiver
     },
     {
         name: "Ocean",
         poem: "The horizon breathes,\nand your thoughts drift with it.",
         audio: "audio/ocean.mp3",
-        setup: () => {},
-        draw: drawOcean
+        setup: initFish,
+        draw: drawUnderwater
     },
     {
         name: "Waves",
         poem: "Rise, fall, return again —\nthe rhythm of being.",
         audio: "audio/waves.mp3",
-        setup: () => {},
+        setup: () => { },
         draw: drawWaves
     }
 ];
@@ -357,7 +498,7 @@ function loadScene(index) {
 
     if (userInteracted) {
         bgAudio.src = s.audio;
-        bgAudio.play().catch(() => {});
+        bgAudio.play().catch(() => { });
     }
 
     s.setup();
@@ -369,7 +510,7 @@ document.body.addEventListener("click", () => {
     if (!userInteracted) {
         userInteracted = true;
         bgAudio.src = scenes[currentScene].audio;
-        bgAudio.play().catch(() => {});
+        bgAudio.play().catch(() => { });
     }
 });
 
