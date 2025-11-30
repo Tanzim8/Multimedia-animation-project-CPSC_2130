@@ -19,9 +19,9 @@ let userInteracted = false;
 let currentPoemIndex = 0;
 let poemFadeState = "fadeIn";
 let poemFadeProgress = 0;
-let lastPoemUpdateTime = 0;
-let poemDisplayStartTime = 0;
-const POEM_DISPLAY_TIME = 3000;
+let lastUpdate = 0;
+let startTime = 0;
+const POEM_DISPLAY_TIME = 2000;
 const POEM_FADE_TIME = 500;
 
 
@@ -583,25 +583,25 @@ window.addEventListener('click', (e) => {
 function updateUniversalPoem() {
     const now = performance.now();
 
-    if (lastPoemUpdateTime === 0) {
-        lastPoemUpdateTime = now;
-        poemDisplayStartTime = now;
+    if (lastUpdate === 0) {
+        lastUpdate = now;
+        startTime = now;
         return;
     }
 
-    const delta = now - lastPoemUpdateTime;
-    lastPoemUpdateTime = now;
+    const delta = now - lastUpdate;
+    lastUpdate = now;
 
     if (poemFadeState === "fadeIn") {
         poemFadeProgress += delta / POEM_FADE_TIME;
         if (poemFadeProgress >= 1) {
             poemFadeProgress = 1;
             poemFadeState = "display";
-            poemDisplayStartTime = now;
+            startTime = now;
         }
     }
     else if (poemFadeState === "display") {
-        if (now - poemDisplayStartTime >= POEM_DISPLAY_TIME) {
+        if (now - startTime >= POEM_DISPLAY_TIME) {
             poemFadeState = "fadeOut";
             poemFadeProgress = 1;
         }
@@ -634,11 +634,11 @@ function updateUniversalPoem() {
 function getCurrentPoemLines() {
     
     if (currentScene === 2) {
-        return sceneCustomPoemEnabled[2] ? scenePoems[2] : underwaterPoemLines;
+        return CustomPoemList[2] ? scenePoems[2] : underwaterPoemLines;
     }
 
     
-    if (sceneCustomPoemEnabled[currentScene]) {
+    if (CustomPoemList[currentScene]) {
         return scenePoems[currentScene];
     } else {
         
@@ -695,7 +695,7 @@ function saveCustomPoem() {
 
             
             scenePoems[currentScene] = userLines;
-            sceneCustomPoemEnabled[currentScene] = true;
+            CustomPoemList[currentScene] = true;
 
             
             updateScenePoem();
@@ -710,7 +710,7 @@ function saveCustomPoem() {
     }
 }
 // ==========================
-// SCENE-SPECIFIC POEM MANAGEMENT
+// SCENE-SPECIFIC POEM 
 // ==========================
 let scenePoems = {
     0: [], 
@@ -719,7 +719,7 @@ let scenePoems = {
     3: []  
 };
 
-let sceneCustomPoemEnabled = {
+let CustomPoemList = {
     0: false,
     1: false,
     2: false,
@@ -734,7 +734,7 @@ function loadAllCustomPoems() {
             scenePoems[i] = savedPoem.split('\n')
                 .map(line => line.trim())
                 .filter(line => line.length > 0);
-            sceneCustomPoemEnabled[i] = scenePoems[i].length >= 2;
+            CustomPoemList[i] = scenePoems[i].length >= 2;
         }
     }
 }
@@ -747,22 +747,22 @@ function updateScenePoem() {
         scenePoems[currentScene] = savedPoem.split('\n')
             .map(line => line.trim())
             .filter(line => line.length > 0);
-        sceneCustomPoemEnabled[currentScene] = scenePoems[currentScene].length >= 2;
+        CustomPoemList[currentScene] = scenePoems[currentScene].length >= 2;
     }
 
    
     currentPoemIndex = 0;
     poemFadeState = "fadeIn";
     poemFadeProgress = 0;
-    lastPoemUpdateTime = 0;
-    poemDisplayStartTime = 0;
+    lastUpdate = 0;
+    startTime = 0;
 }
 
 function resetToDefaultPoem() {
     if (confirm('Are you sure you want to reset to the default poem for this scene?')) {
         const sceneKey = `customPoem_scene_${currentScene}`;
         localStorage.removeItem(sceneKey);
-        sceneCustomPoemEnabled[currentScene] = false;
+        CustomPoemList[currentScene] = false;
         scenePoems[currentScene] = [];
         customPoemTextarea.value = '';
 
@@ -842,22 +842,81 @@ canvas.addEventListener("click", (e) => {
 //Draw Waves------------
 
 
+
+let wavesVideo = document.createElement("video");
+wavesVideo.src = "images/waves2.mov"; 
+wavesVideo.loop = true;
+wavesVideo.muted = true;
+wavesVideo.autoplay = true;
+wavesVideo.playsInline = true;
+
+let wavesVideoReady = false;
+
+wavesVideo.addEventListener("canplay", () => {
+    wavesVideoReady = true;
+    wavesVideo.play(); 
+});
+
+
+wavesVideo.load();
+
+
+
+// function drawWaves() {
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+//     ctx.strokeStyle = "rgba(255,255,255,0.8)";
+//     ctx.lineWidth = 2;
+
+//     ctx.beginPath();
+//     ctx.moveTo(0, canvas.height / 2);
+
+//     for (let x = 0; x < canvas.width; x++) {
+//         let y = canvas.height / 2 +
+//             Math.sin(x * 0.02 + performance.now() * 0.003) * 40;
+//         ctx.lineTo(x, y);
+//     }
+//     ctx.stroke();
+//     updateUniversalPoem();
+// }
+// ==========================
+// SIMPLE WAVES SCENE WITH VIDEO
+// ==========================
+
 function drawWaves() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.8)";
-    ctx.lineWidth = 2;
-
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height / 2);
-
-    for (let x = 0; x < canvas.width; x++) {
-        let y = canvas.height / 2 +
-            Math.sin(x * 0.02 + performance.now() * 0.003) * 40;
-        ctx.lineTo(x, y);
+    
+    
+    if (wavesVideoReady) {
+        
+        ctx.drawImage(wavesVideo, 0, 0, canvas.width, canvas.height);
+        
+       
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+        
+        videoFailImage();
     }
-    ctx.stroke();
+    
+    
     updateUniversalPoem();
+}
+
+function videoFailImage() {
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1e3c72');
+    gradient.addColorStop(1, '#2a5298');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Waves Video Loading...', canvas.width / 2, canvas.height / 2);
 }
 
 // ==========================
@@ -895,7 +954,18 @@ const scenes = [
         name: "Waves",
         poem: "Rise, fall, return again —\nthe rhythm of being.",
         audio: "audio/waves.mp3",
-        setup: () => { },
+        setup: function() {
+            
+            currentPoemIndex = 0;
+            poemFadeState = "fadeIn";
+            poemFadeProgress = 0;
+            
+            
+            if (wavesVideoReady) {
+                wavesVideo.currentTime = 0;
+                wavesVideo.play();
+            }
+        },
         draw: drawWaves
     }
 ];
@@ -930,8 +1000,8 @@ function loadScene(index) {
     currentPoemIndex = 0;
     poemFadeState = "fadeIn";
     poemFadeProgress = 0;
-    lastPoemUpdateTime = 0;
-    poemDisplayStartTime = 0;
+    lastUpdate = 0;
+    startTime = 0;
 
     if (userInteracted) {
         bgAudio.src = s.audio;
