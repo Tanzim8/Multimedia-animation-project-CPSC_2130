@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,13 +17,15 @@
         <h1>Tides & Echoes</h1>
         <nav>
             <a href="Main.html">Home</a>
-            
+
         </nav>
     </header>
 
     <!-- Canvas Container -->
     <section class="canvas-area">
         <canvas id="waterCanvas"></canvas>
+        
+
 
         <!-- Poetic Text Overlay -->
         <div id="poemText" class="poem-text">
@@ -36,11 +39,31 @@
             <button id="nextScene">▶</button>
         </div>
     </section>
+   
 
     <!-- Audio (Scene-Dependent) -->
     <audio id="bgAudio" loop></audio>
 
+    
+<div id="poemMaker" class="maker">
+    <div class="maker-content">
+        <span class="close">&times;</span>
+        <h2>Create Your Own Poem</h2>
+        <textarea id="customPoem" placeholder="Write your poem here....
+Each line will be displayed separately...
+You can write as many lines as you want..."></textarea>
+        <div class="maker-buttons">
+            <button id="savePoem">Use This Poem</button>
+            <button id="resetPoem">Reset to Default</button>
+        </div>
+    </div>
+</div>
+
+
+<button id="addPoemBtn" class="floating-btn">✎ Add Your Poem</button>
+
     <!-- External JavaScript -->
     <script src="js/script.js"></script>
 </body>
+
 </html>

@@ -17,10 +17,19 @@ let cityReady = false;
 let clouds = [];
 let cloudReady = false;
 
-// Proper canvas size
+let userInteracted = false;
+let currentPoemIndex = 0;
+let poemFadeState = "fadeIn";
+let poemFadeProgress = 0;
+let lastPoemUpdateTime = 0;
+let poemDisplayStartTime = 0;
+const POEM_DISPLAY_TIME = 3000;
+const POEM_FADE_TIME = 500;
+
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - 60; // subtract nav height
+    canvas.height = window.innerHeight - 60; 
 }
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
@@ -91,17 +100,17 @@ function spawnCar() {
     const w = img.width * scale;
     const h = img.height * scale;
 
-    // TWO LANES
-    const laneLeftToRight  = canvas.height - 150;   // Upper lane
-    const laneRightToLeft  = canvas.height - 80;   // Lower lane (slightly down)
+    
+    const laneLeftToRight = canvas.height - 150;   
+    const laneRightToLeft = canvas.height - 80;   
 
-    // Pick lane based on direction
+    
     const y = goingRight ? laneLeftToRight : laneRightToLeft;
 
     cars.push({
         img,
         x: goingRight ? -w - 50 : canvas.width + 50,
-        y: y + (Math.random() * 8 - 4),  // small random variation
+        y: y + (Math.random() * 8 - 4),  
         w,
         h,
         dir: goingRight ? 1 : -1,
@@ -115,7 +124,7 @@ function drawCar(c) {
     ctx.translate(c.x, c.y);
 
     if (c.dir === -1) {
-        ctx.scale(-1, 1); // flip horizontally
+        ctx.scale(-1, 1); 
     }
 
     ctx.drawImage(c.img, -c.w / 2, -c.h / 2, c.w, c.h);
@@ -125,21 +134,21 @@ function drawCar(c) {
 
 
 function updateCars() {
-    // Spawn timing
+    
     if (performance.now() - lastCarSpawn > 2500 + Math.random() * 2000) {
         spawnCar();
         lastCarSpawn = performance.now();
     }
 
-    // Move cars
+    
     for (let c of cars) {
         c.x += c.speed * c.dir;
     }
 
-    // Remove off-screen
+    
     cars = cars.filter(c => c.x > -400 && c.x < canvas.width + 400);
 
-    // Draw them
+    
     for (let c of cars) {
         drawCar(c);
     }
@@ -246,6 +255,8 @@ function drawCityBackground() {
 // ==========================
 // DRAW RAIN SCENE
 // ==========================
+
+
 function drawRain() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -267,6 +278,9 @@ function drawRain() {
         }
     }
     ctx.stroke();
+
+
+    updateUniversalPoem();
 }
 
 // ==========================
@@ -286,6 +300,8 @@ function drawRiver() {
 
     // // ─── FOREGROUND BANKS & VEGETATION ───
     // drawRiverBanks();
+    updateUniversalPoem();
+
 }
 
 //drawSubriseSky
@@ -295,17 +311,17 @@ function drawSunriskySky() {
     // ─ MAIN SKY GRADIENT (smooth sunrise) ─
     const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.52);
 
-    skyGrad.addColorStop(0.00, '#350808');      // deep dark red
-    skyGrad.addColorStop(0.22, '#6e1a0a');      // warm red
-    skyGrad.addColorStop(0.45, '#c2410c');      // sunrise orange
-    skyGrad.addColorStop(0.68, '#f59e0b');      // golden yellow-orange
-    skyGrad.addColorStop(0.85, '#f4d35e');      // pale morning yellow
-    skyGrad.addColorStop(1.00, '#fff3bc');      // horizon bright glow
+    skyGrad.addColorStop(0.00, '#350808');      
+    skyGrad.addColorStop(0.22, '#6e1a0a');      
+    skyGrad.addColorStop(0.45, '#c2410c');     
+    skyGrad.addColorStop(0.68, '#f59e0b');     
+    skyGrad.addColorStop(0.85, '#f4d35e');      
+    skyGrad.addColorStop(1.00, '#fff3bc');     
 
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height * 0.52);
 
-    // ─ SUN (improved glow) ─
+    
     const sunX = canvas.width * 0.75;
     const sunY = canvas.height * 0.13;
     const sunRadius = Math.max(40, Math.min(70, canvas.width * 0.05));
@@ -499,9 +515,9 @@ function drawSoftSparkles(waterY, t) {
 
 let fishImagePaths = [
     { src: "images/fish.png", dir: 1 },
-    { src: "images/fish2.png", dir:-1},
-    { src: "images/fish3.png", dir:-1},
-    { src: "images/fish5.png", dir:-1}
+    { src: "images/fish2.png", dir: -1 },
+    { src: "images/fish3.png", dir: -1 },
+    { src: "images/fish5.png", dir: -1 }
 
 ];
 
@@ -540,7 +556,7 @@ let underwaterVideoReady = false;
 
 underwaterVideo.addEventListener("canplay", () => {
     underwaterVideoReady = true;
-    underwaterVideo.play(); 
+    underwaterVideo.play();
 });
 
 
@@ -559,7 +575,7 @@ function initFish() {
         fishList.push({
             img: fishData.img,
             orgDir: fishData.orgDir,
-            moveDir: Math.random() < 0.5 ? 1 : -1,  
+            moveDir: Math.random() < 0.5 ? 1 : -1,
             x: Math.random() * canvas.width,
             y: canvas.height * 0.4 + Math.random() * canvas.height * 0.4,
             speed: 0.5 + Math.random() * 1.5,
@@ -598,6 +614,258 @@ function updateFish() {
             f.x = canvas.width + 60;
     }
 }
+// ==========================
+// UNDERWATER POEM 
+// ==========================
+let underwaterPoemLines = [
+    "In the deep blue silence,",
+    "where light dances with shadow,",
+    "Whispers of the ancient currents,",
+    "carry stories untold.",
+    "Fish dart like living jewels,",
+    "in liquid cathedral halls,",
+    "Each flicker of fin and scale,",
+    "a prayer to the depths.",
+    "The weight of oceans above,",
+    "holds dreams in gentle pressure,",
+    "And in this watery world,",
+    "we find our own reflection."
+];
+
+
+
+// ==========================
+// CUSTOM POEM FUNCTIONALITY
+// ==========================
+let customPoemEnabled = false;
+let userPoemLines = [];
+
+
+const poemMaker = document.getElementById('poemMaker');
+const addPoemBtn = document.getElementById('addPoemBtn');
+const closemaker = document.querySelector('.close');
+const customPoemTextarea = document.getElementById('customPoem');
+const savePoemBtn = document.getElementById('savePoem');
+const resetPoemBtn = document.getElementById('resetPoem');
+
+
+addPoemBtn.addEventListener('click', openpoemMaker);
+closemaker.addEventListener('click', closepoemMaker);
+savePoemBtn.addEventListener('click', saveCustomPoem);
+resetPoemBtn.addEventListener('click', resetToDefaultPoem);
+
+
+window.addEventListener('click', (e) => {
+    if (e.target === poemMaker) {
+        closepoemMaker();
+    }
+});
+
+// ==========================
+// UNIVERSAL POEM ANIMATION
+// ==========================
+function updateUniversalPoem() {
+    const now = performance.now();
+
+    if (lastPoemUpdateTime === 0) {
+        lastPoemUpdateTime = now;
+        poemDisplayStartTime = now;
+        return;
+    }
+
+    const delta = now - lastPoemUpdateTime;
+    lastPoemUpdateTime = now;
+
+    if (poemFadeState === "fadeIn") {
+        poemFadeProgress += delta / POEM_FADE_TIME;
+        if (poemFadeProgress >= 1) {
+            poemFadeProgress = 1;
+            poemFadeState = "display";
+            poemDisplayStartTime = now;
+        }
+    }
+    else if (poemFadeState === "display") {
+        if (now - poemDisplayStartTime >= POEM_DISPLAY_TIME) {
+            poemFadeState = "fadeOut";
+            poemFadeProgress = 1;
+        }
+    }
+    else if (poemFadeState === "fadeOut") {
+        poemFadeProgress -= delta / POEM_FADE_TIME;
+        if (poemFadeProgress <= 0) {
+            poemFadeProgress = 0;
+            currentPoemIndex += 2;
+
+            
+            const currentPoemLines = getCurrentPoemLines();
+
+            if (currentPoemIndex >= currentPoemLines.length) {
+                currentPoemIndex = 0;
+            }
+            poemFadeState = "fadeIn";
+        }
+    }
+
+    poemText.style.opacity = poemFadeProgress;
+
+    
+    const currentPoemLines = getCurrentPoemLines();
+    const line1 = currentPoemLines[currentPoemIndex] || "";
+    const line2 = currentPoemLines[currentPoemIndex + 1] || "";
+    poemText.innerHTML = `${line1}<br>${line2}`;
+}
+
+function getCurrentPoemLines() {
+    
+    if (currentScene === 2) {
+        return sceneCustomPoemEnabled[2] ? scenePoems[2] : underwaterPoemLines;
+    }
+
+    
+    if (sceneCustomPoemEnabled[currentScene]) {
+        return scenePoems[currentScene];
+    } else {
+        
+        const defaultPoem = scenes[currentScene].poem;
+        return defaultPoem.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    }
+}
+
+function openpoemMaker() {
+    poemMaker.style.display = 'block';
+
+   
+    const sceneKey = `customPoem_scene_${currentScene}`;
+    const savedPoem = localStorage.getItem(sceneKey);
+
+    if (savedPoem) {
+        customPoemTextarea.value = savedPoem;
+    } else {
+        
+        if (currentScene === 2) { 
+            customPoemTextarea.value = underwaterPoemLines.join('\n');
+        } else {
+            customPoemTextarea.value = scenes[currentScene].poem;
+        }
+    }
+
+    
+    const sceneTitles = {
+        0: "Rain Scene Poem",
+        1: "River Scene Poem",
+        2: "Ocean Scene Poem",
+        3: "Waves Scene Poem"
+    };
+    document.querySelector('.maker-content h2').textContent = sceneTitles[currentScene] + " - Write Your Poem";
+}
+
+function closepoemMaker() {
+    poemMaker.style.display = 'none';
+}
+
+function saveCustomPoem() {
+    const poemText = customPoemTextarea.value.trim();
+
+    if (poemText) {
+        
+        const userLines = poemText.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+
+        if (userLines.length >= 2) {
+            
+            const sceneKey = `customPoem_scene_${currentScene}`;
+            localStorage.setItem(sceneKey, poemText);
+
+            
+            scenePoems[currentScene] = userLines;
+            sceneCustomPoemEnabled[currentScene] = true;
+
+            
+            updateScenePoem();
+
+            alert(`Your custom poem has been saved for the ${scenes[currentScene].name} scene!`);
+            closepoemMaker();
+        } else {
+            alert('Please write at least 2 lines for your poem.');
+        }
+    } else {
+        alert('Please write a poem before saving.');
+    }
+}
+// ==========================
+// SCENE-SPECIFIC POEM MANAGEMENT
+// ==========================
+let scenePoems = {
+    0: [], 
+    1: [], 
+    2: [], 
+    3: []  
+};
+
+let sceneCustomPoemEnabled = {
+    0: false,
+    1: false,
+    2: false,
+    3: false
+};
+
+function loadAllCustomPoems() {
+    for (let i = 0; i < scenes.length; i++) {
+        const sceneKey = `customPoem_scene_${i}`;
+        const savedPoem = localStorage.getItem(sceneKey);
+        if (savedPoem) {
+            scenePoems[i] = savedPoem.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+            sceneCustomPoemEnabled[i] = scenePoems[i].length >= 2;
+        }
+    }
+}
+
+function updateScenePoem() {
+    const sceneKey = `customPoem_scene_${currentScene}`;
+    const savedPoem = localStorage.getItem(sceneKey);
+
+    if (savedPoem) {
+        scenePoems[currentScene] = savedPoem.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+        sceneCustomPoemEnabled[currentScene] = scenePoems[currentScene].length >= 2;
+    }
+
+   
+    currentPoemIndex = 0;
+    poemFadeState = "fadeIn";
+    poemFadeProgress = 0;
+    lastPoemUpdateTime = 0;
+    poemDisplayStartTime = 0;
+}
+
+function resetToDefaultPoem() {
+    if (confirm('Are you sure you want to reset to the default poem for this scene?')) {
+        const sceneKey = `customPoem_scene_${currentScene}`;
+        localStorage.removeItem(sceneKey);
+        sceneCustomPoemEnabled[currentScene] = false;
+        scenePoems[currentScene] = [];
+        customPoemTextarea.value = '';
+
+        updateScenePoem();
+        alert('Reset to default poem for this scene!');
+        closepoemMaker();
+    }
+}
+
+
+function loadCustomPoem() {
+    const savedPoem = localStorage.getItem('customUnderwaterPoem');
+    if (savedPoem) {
+        userPoemLines = savedPoem.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+        customPoemEnabled = userPoemLines.length >= 2;
+    }
+}
 
 
 
@@ -605,43 +873,57 @@ function updateFish() {
 function drawUnderwater() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    
     if (underwaterVideoReady) {
         ctx.drawImage(underwaterVideo, 0, 0, canvas.width, canvas.height);
     }
 
-    
     updateFish();
     for (let f of fishList) drawFish(f);
+
+
+    updateUniversalPoem();
+
     if (fishList.length === 0) {
-    initFish(); 
-}
+        initFish();
+    }
 }
 
+
+
+
+
+
+
+
+
+
+
 canvas.addEventListener("click", (e) => {
-    
+
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    
+
     for (let i = fishList.length - 1; i >= 0; i--) {
         const f = fishList[i];
 
-        
+
         const left = f.x - f.size / 2;
         const right = f.x + f.size / 2;
         const top = f.y - f.size / 2;
         const bottom = f.y + f.size / 2;
 
-        
+
         if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom) {
-            fishList.splice(i, 1); 
-            break; 
+            fishList.splice(i, 1);
+            break;
         }
     }
 });
 
+
+//Draw Waves------------
 
 
 function drawWaves() {
@@ -659,6 +941,7 @@ function drawWaves() {
         ctx.lineTo(x, y);
     }
     ctx.stroke();
+    updateUniversalPoem();
 }
 
 // ==========================
@@ -681,9 +964,15 @@ const scenes = [
     },
     {
         name: "Ocean",
-        poem: "The horizon breathes,\nand your thoughts drift with it.",
+        poem: "",
         audio: "audio/ocean.mp3",
-        setup: initFish,
+        setup: function () {
+            initFish();
+            currentPoemIndex = 0;
+            poemFadeState = "fadeIn";
+            poemFadeProgress = 0;
+
+        },
         draw: drawUnderwater
     },
     {
@@ -694,6 +983,16 @@ const scenes = [
         draw: drawWaves
     }
 ];
+loadAllCustomPoems();
+
+document.body.addEventListener("click", () => {
+    if (!userInteracted) {
+        userInteracted = true;
+        bgAudio.src = scenes[currentScene].audio;
+        bgAudio.play().catch(() => { });
+    }
+});
+
 
 // ==========================
 // SCENE LOADING
@@ -703,9 +1002,20 @@ function loadScene(index) {
 
     sceneName.textContent = s.name;
 
-    poemText.style.opacity = 0;
-    poemText.innerHTML = s.poem.replace(/\n/g, "<br>");
-    setTimeout(() => poemText.style.opacity = 1, 100);
+    
+    poemText.style.fontFamily = "'Great Vibes', cursive";
+    poemText.style.fontSize = "50px";
+    poemText.style.fontWeight = "300";
+    poemText.style.lineHeight = "1.6";
+    poemText.style.textAlign = "center";
+
+    
+    poemText.style.transition = "none"; 
+    currentPoemIndex = 0;
+    poemFadeState = "fadeIn";
+    poemFadeProgress = 0;
+    lastPoemUpdateTime = 0;
+    poemDisplayStartTime = 0;
 
     if (userInteracted) {
         bgAudio.src = s.audio;
@@ -715,16 +1025,6 @@ function loadScene(index) {
     s.setup();
     animateScene = s.draw;
 }
-
-let userInteracted = false;
-document.body.addEventListener("click", () => {
-    if (!userInteracted) {
-        userInteracted = true;
-        bgAudio.src = scenes[currentScene].audio;
-        bgAudio.play().catch(() => { });
-    }
-});
-
 // ==========================
 // BUTTONS
 // ==========================
