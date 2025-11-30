@@ -292,151 +292,204 @@ function drawRiver() {
 function drawSunriskySky() {
     const t = performance.now() * 0.0002;
 
-    // ─ MAIN SKY GRADIENT ─
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.5);
-    skyGrad.addColorStop(0, '#1a0f2e');         // deep purple-dark top
-    skyGrad.addColorStop(0.35, '#4a2c5e');      // purple mid
-    skyGrad.addColorStop(0.6, '#d97706');       // golden-orange
-    skyGrad.addColorStop(0.85, '#fbbf24');      // bright yellow
-    skyGrad.addColorStop(1, '#fef3c7');         // soft cream near horizon
+    // ─ MAIN SKY GRADIENT (smooth sunrise) ─
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.52);
+
+    skyGrad.addColorStop(0.00, '#350808');      // deep dark red
+    skyGrad.addColorStop(0.22, '#6e1a0a');      // warm red
+    skyGrad.addColorStop(0.45, '#c2410c');      // sunrise orange
+    skyGrad.addColorStop(0.68, '#f59e0b');      // golden yellow-orange
+    skyGrad.addColorStop(0.85, '#f4d35e');      // pale morning yellow
+    skyGrad.addColorStop(1.00, '#fff3bc');      // horizon bright glow
 
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.5);
+    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.52);
 
-    // ─ SUN (glowing orb) ─
+    // ─ SUN (improved glow) ─
     const sunX = canvas.width * 0.75;
-    const sunY = canvas.height * 0.12;
-    const sunRadius = Math.max(35, Math.min(65, canvas.width * 0.05));
-    
+    const sunY = canvas.height * 0.13;
+    const sunRadius = Math.max(40, Math.min(70, canvas.width * 0.05));
+
     // Outer glow
-    const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 4);
-    sunGlow.addColorStop(0, 'rgba(255, 200, 80, 0.8)');
-    sunGlow.addColorStop(0.4, 'rgba(255, 170, 50, 0.3)');
+    const sunGlow = ctx.createRadialGradient(
+        sunX, sunY, sunRadius * 0.3,
+        sunX, sunY, sunRadius * 4.5
+    );
+    sunGlow.addColorStop(0, 'rgba(255, 200, 80, 0.85)');
+    sunGlow.addColorStop(0.4, 'rgba(255, 170, 50, 0.35)');
     sunGlow.addColorStop(1, 'rgba(255, 140, 30, 0)');
 
     ctx.fillStyle = sunGlow;
     ctx.beginPath();
-    ctx.arc(sunX, sunY, sunRadius * 4, 0, Math.PI * 2);
+    ctx.arc(sunX, sunY, sunRadius * 4.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Sun core
-    ctx.fillStyle = 'rgba(255, 220, 100, 0.95)';
+    // Core
+    ctx.fillStyle = 'rgba(255, 220, 120, 0.97)';
     ctx.beginPath();
     ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // ─ ANIMATED CLOUDS (wispy, warm) ─
-    ctx.globalAlpha = 0.6;
-    ctx.fillStyle = 'rgba(255, 180, 100, 0.15)';
-    for (let i = 0; i < 5; i++) {
-        const cloudX = (canvas.width * (0.2 + i * 0.15) + t * 20) % (canvas.width + 200);
-        const cloudY = canvas.height * (0.08 + i * 0.04);
-        drawCloud(cloudX, cloudY, 80 + i * 10);
+    // ─ CLOUDS (improved shapes + movement) ─
+    ctx.globalAlpha = 0.25;
+
+    for (let i = 0; i < 6; i++) {
+        const speed = 12 + i * 4;
+        const sway = Math.sin(t * (0.8 + i * 0.15) + i) * 12;
+        const drift = Math.cos(t * (0.5 + i * 0.12) + i) * 6;
+
+        const cloudX = (canvas.width * (0.05 + i * 0.22) + t * speed) % (canvas.width + 300);
+        const cloudY = canvas.height * (0.05 + i * 0.03) + sway + drift;
+
+        ctx.globalAlpha = 0.12 + i * 0.03;
+        drawCloud(cloudX, cloudY, 75 + i * 14);
     }
+
     ctx.globalAlpha = 1;
 }
 
-//draw cloud
+
 function drawCloud(x, y, size) {
+    ctx.fillStyle = 'rgba(255, 200, 140, 0.18)';
+
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.arc(x + size * 0.8, y - size * 0.3, size * 0.7, 0, Math.PI * 2);
-    ctx.arc(x - size * 0.8, y - size * 0.2, size * 0.6, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.6, y - size * 0.25, size * 0.75, 0, Math.PI * 2);
+    ctx.arc(x - size * 0.6, y - size * 0.15, size * 0.65, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.3, y + size * 0.2, size * 0.55, 0, Math.PI * 2);
+    ctx.arc(x - size * 0.3, y + size * 0.25, size * 0.5, 0, Math.PI * 2);
     ctx.fill();
 }
-//draw river water
+
+// ─────────────────────────────────────────────────────────
+// RIVER
+// ─────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// DRAW RIVER WATER
+// ─────────────────────────────────────────────
 function drawRiverWater() {
     const waterTopY = canvas.height * 0.48;
     const t = performance.now() * 0.0005;
 
-    // ─ SKY REFLECTION (soft mirror of sky on water) ─
-    const reflGrad = ctx.createLinearGradient(0, waterTopY, 0, waterTopY + canvas.height * 0.15);
-    reflGrad.addColorStop(0, 'rgba(255, 200, 100, 0.25)');
-    reflGrad.addColorStop(0.3, 'rgba(255, 170, 80, 0.12)');
-    reflGrad.addColorStop(1, 'rgba(100, 120, 160, 0.08)');
+    // ─ 1. VERY SOFT SKY REFLECTION (evened out) ─
+    const reflGrad = ctx.createLinearGradient(0, waterTopY, 0, waterTopY + canvas.height * 0.18);
+    reflGrad.addColorStop(0.00, 'rgba(255, 200, 120, 0.18)');
+    reflGrad.addColorStop(0.50, 'rgba(255, 170, 90, 0.10)');
+    reflGrad.addColorStop(1.00, 'rgba(120, 150, 180, 0.05)');
 
-    ctx.save();
     ctx.fillStyle = reflGrad;
     ctx.fillRect(0, waterTopY, canvas.width, canvas.height * 0.18);
-    ctx.restore();
 
-    // ─ MAIN WATER BODY (gradient from light to dark) ─
+    // ─ 2. MAIN WATER (very smooth fade) ─
     const waterGrad = ctx.createLinearGradient(0, waterTopY, 0, canvas.height);
-    waterGrad.addColorStop(0, 'rgba(100, 160, 200, 0.5)');    // light blue top
-    waterGrad.addColorStop(0.5, 'rgba(60, 120, 160, 0.6)');   // mid blue
-    waterGrad.addColorStop(1, 'rgba(30, 70, 120, 0.7)');      // dark blue bottom
+    waterGrad.addColorStop(0.00, 'rgba(110, 170, 200, 0.33)');
+    waterGrad.addColorStop(0.25, 'rgba(80, 135, 170, 0.40)');
+    waterGrad.addColorStop(0.55, 'rgba(50, 95, 140, 0.50)');
+    waterGrad.addColorStop(0.85, 'rgba(30, 60, 100, 0.65)');
+    waterGrad.addColorStop(1.00, 'rgba(20, 40, 75, 0.75)');
 
     ctx.fillStyle = waterGrad;
     ctx.fillRect(0, waterTopY, canvas.width, canvas.height - waterTopY);
 
-    // ─ ANIMATED WATER SURFACE (flowing waves) ─
-    drawWaterSurface(waterTopY, t);
+    // ─ 3. VERY subtle horizontal movement (even, not bright) ─
+    drawEvenBands(waterTopY, t);
 
-    // ─ SPARKLES / SUN GLINT ON WATER ─
-    drawWaterSparkles(waterTopY, t);
+    // ─ 4. Much softer waves ─
+    drawEvenWaves(waterTopY, t);
+
+    // ─ 5. VERY soft sparkles ─
+    drawSoftSparkles(waterTopY, t);
 }
 
-//draw water surface
-function drawWaterSurface(waterY, t) {
+
+// ─────────────────────────────────────────────
+// EVENED HORIZONTAL BANDS (minimal contrast)
+// ─────────────────────────────────────────────
+function drawEvenBands(waterY, t) {
     ctx.save();
-    ctx.strokeStyle = 'rgba(200, 220, 255, 0.4)';
-    ctx.lineWidth = 1.5;
+
+    for (let i = 0; i < 5; i++) {
+        const y = waterY + i * 25 + Math.sin(t * 0.5 + i) * 2;
+
+        const g = ctx.createLinearGradient(0, y, canvas.width, y);
+        g.addColorStop(0.0, 'rgba(255,255,255,0.02)');
+        g.addColorStop(0.5, 'rgba(255,255,255,0)');
+        g.addColorStop(1.0, 'rgba(255,255,255,0.02)');
+
+        ctx.fillStyle = g;
+        ctx.fillRect(0, y - 2, canvas.width, 4);
+    }
+
+    ctx.restore();
+}
+
+
+// ─────────────────────────────────────────────
+// EVENED WAVES (quiet + blended)
+// ─────────────────────────────────────────────
+function drawEvenWaves(waterY, t) {
+    ctx.save();
+    ctx.lineWidth = 0.9;
     ctx.lineCap = 'round';
 
-    // Multiple wave layers for organic motion
     for (let layer = 0; layer < 3; layer++) {
         ctx.beginPath();
-        const freq = 0.008 + layer * 0.003;
-        const speed = 0.7 + layer * 0.3;
-        const amp = 8 - layer * 2;
-        const offset = layer * 80;
 
-        for (let x = 0; x <= canvas.width; x += 8) {
-            const y = waterY
-                + Math.sin(x * freq + t * speed + offset) * amp
-                + Math.sin(x * (freq * 2.2) + t * (speed * 0.6)) * (amp * 0.5);
+        const freq = 0.006 + layer * 0.002;
+        const speed = 0.45 + layer * 0.2;
+        const amp = 3 + Math.sin(t * 0.3 + layer) * 1;
 
-            if (x === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+        ctx.strokeStyle = `rgba(255,255,255,${0.04 + layer * 0.02})`;
+
+        for (let x = 0; x <= canvas.width; x += 7) {
+            const perspective = 0.4 + (x / canvas.width) * 0.6;
+
+            const y =
+                waterY +
+                Math.sin(x * freq + t * speed) * amp * perspective +
+                Math.cos(x * freq * 1.7 + t * speed * 0.7) * (amp * 0.4) * perspective;
+
+            x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
+
         ctx.stroke();
     }
 
     ctx.restore();
 }
 
-// Helper: sun glints reflecting on water
-function drawWaterSparkles(waterY, t) {
+
+// ─────────────────────────────────────────────
+// SUPER SOFT SPARKLES (barely noticeable)
+// ─────────────────────────────────────────────
+function drawSoftSparkles(waterY, t) {
     ctx.save();
     ctx.globalCompositeOperation = 'screen';
-    ctx.globalAlpha = 0.7;
+    ctx.globalAlpha = 0.35;
 
-    for (let i = 0; i < 20; i++) {
-        const sparkleX = (canvas.width * (0.2 + i * 0.038) + t * 40 * (0.5 + Math.sin(i * 0.5))) % canvas.width;
-        const sparkleBaseY = waterY + canvas.height * (0.04 + Math.sin(i * 0.3) * 0.03);
+    for (let i = 0; i < 12; i++) {
+        const x =
+            (canvas.width * (0.2 + i * 0.05) +
+                t * 26 * (0.5 + Math.sin(i * 0.4))) %
+            canvas.width;
 
-        // Bobbing motion
-        const bobY = sparkleBaseY + Math.sin(t * 1.2 + i * 0.8) * 6;
-        const sparkleSize = 2 + Math.sin(t * 1.5 + i * 0.6) * 1.5;
+        const baseY = waterY + canvas.height * (0.045 + Math.sin(i * 0.25) * 0.02);
+        const y = baseY + Math.sin(t * 1.0 + i * 0.6) * 3;
 
-        ctx.fillStyle = 'rgba(255, 230, 150, 0.9)';
+        const size = 1 + Math.sin(t * 1.3 + i * 0.3) * 0.8;
+
+        ctx.fillStyle = 'rgba(255,230,170,0.75)';
         ctx.beginPath();
-        ctx.arc(sparkleX, bobY, sparkleSize, 0, Math.PI * 2);
+        ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fill();
-
-        // Cross twinkle
-        ctx.strokeStyle = 'rgba(255, 220, 120, 0.5)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(sparkleX - sparkleSize * 2, bobY);
-        ctx.lineTo(sparkleX + sparkleSize * 2, bobY);
-        ctx.moveTo(sparkleX, bobY - sparkleSize * 2);
-        ctx.lineTo(sparkleX, bobY + sparkleSize * 2);
-        ctx.stroke();
     }
 
     ctx.restore();
 }
+
+
+
 
 // ==========================
 // UNDERWATER OCEAN + FISH
