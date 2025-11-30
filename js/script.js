@@ -21,9 +21,9 @@ let userInteracted = false;
 let currentPoemIndex = 0;
 let poemFadeState = "fadeIn";
 let poemFadeProgress = 0;
-let lastPoemUpdateTime = 0;
-let poemDisplayStartTime = 0;
-const POEM_DISPLAY_TIME = 3000;
+let lastUpdate = 0;
+let startTime = 0;
+const POEM_DISPLAY_TIME = 2000;
 const POEM_FADE_TIME = 500;
 
 
@@ -667,25 +667,25 @@ window.addEventListener('click', (e) => {
 function updateUniversalPoem() {
     const now = performance.now();
 
-    if (lastPoemUpdateTime === 0) {
-        lastPoemUpdateTime = now;
-        poemDisplayStartTime = now;
+    if (lastUpdate === 0) {
+        lastUpdate = now;
+        startTime = now;
         return;
     }
 
-    const delta = now - lastPoemUpdateTime;
-    lastPoemUpdateTime = now;
+    const delta = now - lastUpdate;
+    lastUpdate = now;
 
     if (poemFadeState === "fadeIn") {
         poemFadeProgress += delta / POEM_FADE_TIME;
         if (poemFadeProgress >= 1) {
             poemFadeProgress = 1;
             poemFadeState = "display";
-            poemDisplayStartTime = now;
+            startTime = now;
         }
     }
     else if (poemFadeState === "display") {
-        if (now - poemDisplayStartTime >= POEM_DISPLAY_TIME) {
+        if (now - startTime >= POEM_DISPLAY_TIME) {
             poemFadeState = "fadeOut";
             poemFadeProgress = 1;
         }
@@ -718,11 +718,11 @@ function updateUniversalPoem() {
 function getCurrentPoemLines() {
     
     if (currentScene === 2) {
-        return sceneCustomPoemEnabled[2] ? scenePoems[2] : underwaterPoemLines;
+        return CustomPoemList[2] ? scenePoems[2] : underwaterPoemLines;
     }
 
     
-    if (sceneCustomPoemEnabled[currentScene]) {
+    if (CustomPoemList[currentScene]) {
         return scenePoems[currentScene];
     } else {
         
@@ -779,7 +779,7 @@ function saveCustomPoem() {
 
             
             scenePoems[currentScene] = userLines;
-            sceneCustomPoemEnabled[currentScene] = true;
+            CustomPoemList[currentScene] = true;
 
             
             updateScenePoem();
@@ -794,7 +794,7 @@ function saveCustomPoem() {
     }
 }
 // ==========================
-// SCENE-SPECIFIC POEM MANAGEMENT
+// SCENE-SPECIFIC POEM 
 // ==========================
 let scenePoems = {
     0: [], 
@@ -803,7 +803,7 @@ let scenePoems = {
     3: []  
 };
 
-let sceneCustomPoemEnabled = {
+let CustomPoemList = {
     0: false,
     1: false,
     2: false,
@@ -818,7 +818,7 @@ function loadAllCustomPoems() {
             scenePoems[i] = savedPoem.split('\n')
                 .map(line => line.trim())
                 .filter(line => line.length > 0);
-            sceneCustomPoemEnabled[i] = scenePoems[i].length >= 2;
+            CustomPoemList[i] = scenePoems[i].length >= 2;
         }
     }
 }
@@ -831,22 +831,22 @@ function updateScenePoem() {
         scenePoems[currentScene] = savedPoem.split('\n')
             .map(line => line.trim())
             .filter(line => line.length > 0);
-        sceneCustomPoemEnabled[currentScene] = scenePoems[currentScene].length >= 2;
+        CustomPoemList[currentScene] = scenePoems[currentScene].length >= 2;
     }
 
    
     currentPoemIndex = 0;
     poemFadeState = "fadeIn";
     poemFadeProgress = 0;
-    lastPoemUpdateTime = 0;
-    poemDisplayStartTime = 0;
+    lastUpdate = 0;
+    startTime = 0;
 }
 
 function resetToDefaultPoem() {
     if (confirm('Are you sure you want to reset to the default poem for this scene?')) {
         const sceneKey = `customPoem_scene_${currentScene}`;
         localStorage.removeItem(sceneKey);
-        sceneCustomPoemEnabled[currentScene] = false;
+        CustomPoemList[currentScene] = false;
         scenePoems[currentScene] = [];
         customPoemTextarea.value = '';
 
@@ -1014,8 +1014,8 @@ function loadScene(index) {
     currentPoemIndex = 0;
     poemFadeState = "fadeIn";
     poemFadeProgress = 0;
-    lastPoemUpdateTime = 0;
-    poemDisplayStartTime = 0;
+    lastUpdate = 0;
+    startTime = 0;
 
     if (userInteracted) {
         bgAudio.src = s.audio;
