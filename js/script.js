@@ -1,6 +1,4 @@
-// ==========================
 // GLOBALS
-// ==========================
 const canvas = document.getElementById("waterCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -34,9 +32,7 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-// ==========================
 // RAIN
-// ==========================
 const rainDrops = [];
 const RAIN_DROP_COUNT = 400;
 
@@ -52,9 +48,7 @@ function initRain() {
     }
 }
 
-// ==========================
 // CAR SPRITES
-// ==========================
 let carSheet;
 let sideCars = [];
 let cars = [];
@@ -154,9 +148,7 @@ function updateCars() {
     }
 }
 
-// ==========================
 // CITY BACKGROUND
-// ==========================
 function drawCityBackground() {
 
     // BUILDINGS
@@ -252,9 +244,7 @@ function drawCityBackground() {
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
 
-// ==========================
 // DRAW RAIN SCENE
-// ==========================
 
 
 function drawRain() {
@@ -283,190 +273,108 @@ function drawRain() {
     updateUniversalPoem();
 }
 
-// ==========================
-// OTHER SCENES
-// ==========================
-function drawRiver() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+//RIVER SCENE
 
-    // ─── BACKGROUND SKY (warm sunrise gradient) ───
-    drawSunriskySky();
 
-    // ─── RIVER WATER & REFLECTIONS ───
-    drawRiverWater();
-
-    // // ─── ANIMATED PARTICLES (leaves, mist) ───
-    // drawFloatingParticles();
-
-    // // ─── FOREGROUND BANKS & VEGETATION ───
-    // drawRiverBanks();
-    updateUniversalPoem();
-
-}
-
-//drawSubriseSky
-function drawSunriskySky() {
-    const t = performance.now() * 0.0002;
-
-    // ─ MAIN SKY GRADIENT (smooth sunrise) ─
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.52);
-
-    skyGrad.addColorStop(0.00, '#350808');      
-    skyGrad.addColorStop(0.22, '#6e1a0a');      
-    skyGrad.addColorStop(0.45, '#c2410c');     
-    skyGrad.addColorStop(0.68, '#f59e0b');     
-    skyGrad.addColorStop(0.85, '#f4d35e');      
-    skyGrad.addColorStop(1.00, '#fff3bc');     
+function drawCartoonSky() {
+    // Sky gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.4);
+    skyGrad.addColorStop(0, "#c5ecff");
+    skyGrad.addColorStop(1, "#a7e0ff");
 
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.52);
+    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.4);
 
-    
-    const sunX = canvas.width * 0.75;
-    const sunY = canvas.height * 0.13;
-    const sunRadius = Math.max(40, Math.min(70, canvas.width * 0.05));
-
-    // Outer glow
-    const sunGlow = ctx.createRadialGradient(
-        sunX, sunY, sunRadius * 0.3,
-        sunX, sunY, sunRadius * 4.5
-    );
-    sunGlow.addColorStop(0, 'rgba(255, 200, 80, 0.85)');
-    sunGlow.addColorStop(0.4, 'rgba(255, 170, 50, 0.35)');
-    sunGlow.addColorStop(1, 'rgba(255, 140, 30, 0)');
-
-    ctx.fillStyle = sunGlow;
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, sunRadius * 4.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Core
-    ctx.fillStyle = 'rgba(255, 220, 120, 0.97)';
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ─ CLOUDS (improved shapes + movement) ─
-    ctx.globalAlpha = 0.25;
-
-    for (let i = 0; i < 6; i++) {
-        const speed = 12 + i * 4;
-        const sway = Math.sin(t * (0.8 + i * 0.15) + i) * 12;
-        const drift = Math.cos(t * (0.5 + i * 0.12) + i) * 6;
-
-        const cloudX = (canvas.width * (0.05 + i * 0.22) + t * speed) % (canvas.width + 300);
-        const cloudY = canvas.height * (0.05 + i * 0.03) + sway + drift;
-
-        ctx.globalAlpha = 0.12 + i * 0.03;
-        drawCloud(cloudX, cloudY, 75 + i * 14);
-    }
-
-    ctx.globalAlpha = 1;
+    drawCartoonClouds();
+    drawCartoonMountains();
+    drawCartoonFields();
 }
 
+function drawCartoonClouds() {
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    drawPuffyCloud(100, 70, 60);
+    drawPuffyCloud(canvas.width * 0.65, 90, 75);
+}
 
-function drawCloud(x, y, size) {
-    ctx.fillStyle = 'rgba(255, 200, 140, 0.18)';
-
+function drawPuffyCloud(x, y, size) {
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.arc(x + size * 0.6, y - size * 0.25, size * 0.75, 0, Math.PI * 2);
-    ctx.arc(x - size * 0.6, y - size * 0.15, size * 0.65, 0, Math.PI * 2);
-    ctx.arc(x + size * 0.3, y + size * 0.2, size * 0.55, 0, Math.PI * 2);
-    ctx.arc(x - size * 0.3, y + size * 0.25, size * 0.5, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.6, y + size * 0.2, size * 0.8, 0, Math.PI * 2);
+    ctx.arc(x - size * 0.6, y + size * 0.3, size * 0.7, 0, Math.PI * 2);
     ctx.fill();
 }
 
-// ─────────────────────────────────────────────────────────
-// RIVER
-// ─────────────────────────────────────────────────────────
+function drawCartoonMountains() {
+    ctx.fillStyle = "#8bc1a5";
 
-// ─────────────────────────────────────────────
-// DRAW RIVER WATER
-// ─────────────────────────────────────────────
-function drawRiverWater() {
-    const waterTopY = canvas.height * 0.48;
-    const t = performance.now() * 0.0005;
-
-    // ─ 1. VERY SOFT SKY REFLECTION (evened out) ─
-    const reflGrad = ctx.createLinearGradient(0, waterTopY, 0, waterTopY + canvas.height * 0.18);
-    reflGrad.addColorStop(0.00, 'rgba(255, 200, 120, 0.18)');
-    reflGrad.addColorStop(0.50, 'rgba(255, 170, 90, 0.10)');
-    reflGrad.addColorStop(1.00, 'rgba(120, 150, 180, 0.05)');
-
-    ctx.fillStyle = reflGrad;
-    ctx.fillRect(0, waterTopY, canvas.width, canvas.height * 0.18);
-
-    // ─ 2. MAIN WATER (very smooth fade) ─
-    const waterGrad = ctx.createLinearGradient(0, waterTopY, 0, canvas.height);
-    waterGrad.addColorStop(0.00, 'rgba(110, 170, 200, 0.33)');
-    waterGrad.addColorStop(0.25, 'rgba(80, 135, 170, 0.40)');
-    waterGrad.addColorStop(0.55, 'rgba(50, 95, 140, 0.50)');
-    waterGrad.addColorStop(0.85, 'rgba(30, 60, 100, 0.65)');
-    waterGrad.addColorStop(1.00, 'rgba(20, 40, 75, 0.75)');
-
-    ctx.fillStyle = waterGrad;
-    ctx.fillRect(0, waterTopY, canvas.width, canvas.height - waterTopY);
-
-    // ─ 3. VERY subtle horizontal movement (even, not bright) ─
-    drawEvenBands(waterTopY, t);
-
-    // ─ 4. Much softer waves ─
-    drawEvenWaves(waterTopY, t);
-
-    // ─ 5. VERY soft sparkles ─
-    drawSoftSparkles(waterTopY, t);
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height * 0.38);
+    ctx.quadraticCurveTo(canvas.width * 0.2, canvas.height * 0.28,
+                         canvas.width * 0.45, canvas.height * 0.38);
+    ctx.quadraticCurveTo(canvas.width * 0.75, canvas.height * 0.28,
+                         canvas.width, canvas.height * 0.38);
+    ctx.lineTo(canvas.width, canvas.height * 0.45);
+    ctx.lineTo(0, canvas.height * 0.45);
+    ctx.closePath();
+    ctx.fill();
 }
 
+function drawCartoonFields() {
+    // Main grass field
+    ctx.fillStyle = "#b9e38a";
+    ctx.fillRect(0, canvas.height * 0.45, canvas.width, canvas.height * 0.1);
 
-// ─────────────────────────────────────────────
-// EVENED HORIZONTAL BANDS (minimal contrast)
-// ─────────────────────────────────────────────
-function drawEvenBands(waterY, t) {
-    ctx.save();
-
-    for (let i = 0; i < 5; i++) {
-        const y = waterY + i * 25 + Math.sin(t * 0.5 + i) * 2;
-
-        const g = ctx.createLinearGradient(0, y, canvas.width, y);
-        g.addColorStop(0.0, 'rgba(255,255,255,0.02)');
-        g.addColorStop(0.5, 'rgba(255,255,255,0)');
-        g.addColorStop(1.0, 'rgba(255,255,255,0.02)');
-
-        ctx.fillStyle = g;
-        ctx.fillRect(0, y - 2, canvas.width, 4);
+    // Bush line
+    ctx.fillStyle = "#6ea05f";
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height * 0.45);
+    for (let x = 0; x < canvas.width; x += 40) {
+        ctx.quadraticCurveTo(x + 20, canvas.height * 0.42,
+                             x + 40, canvas.height * 0.45);
     }
-
-    ctx.restore();
+    ctx.lineTo(canvas.width, canvas.height * 0.45);
+    ctx.closePath();
+    ctx.fill();
 }
 
 
-// ─────────────────────────────────────────────
-// EVENED WAVES (quiet + blended)
-// ─────────────────────────────────────────────
-function drawEvenWaves(waterY, t) {
-    ctx.save();
-    ctx.lineWidth = 0.9;
-    ctx.lineCap = 'round';
+function drawCartoonRiver() {
+    const waterTop = canvas.height * 0.55;
 
-    for (let layer = 0; layer < 3; layer++) {
+    // Water gradient
+    const grad = ctx.createLinearGradient(0, waterTop, 0, canvas.height);
+    grad.addColorStop(0, "#8ed3f9");
+    grad.addColorStop(0.5, "#6dbce8");
+    grad.addColorStop(1, "#4a9ed2");
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, waterTop, canvas.width, canvas.height - waterTop);
+
+    const t = performance.now() * 0.001;
+    drawFlowingRipples(waterTop, t);
+}
+
+
+function drawFlowingRipples(waterTop, t) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = "round";
+
+    const waveCount = 8;
+
+    for (let i = 0; i < waveCount; i++) {
+        const y = waterTop + 20 + i * 28;
+
         ctx.beginPath();
 
-        const freq = 0.006 + layer * 0.002;
-        const speed = 0.45 + layer * 0.2;
-        const amp = 3 + Math.sin(t * 0.3 + layer) * 1;
+        for (let x = -200; x < canvas.width + 200; x += 20) {
+            const drift = t * 30;              // sideways movement
+            const curve = Math.sin((x + drift) * 0.015 + i) * 6;  // curved ripple
+            const yy = y + curve;
 
-        ctx.strokeStyle = `rgba(255,255,255,${0.04 + layer * 0.02})`;
-
-        for (let x = 0; x <= canvas.width; x += 7) {
-            const perspective = 0.4 + (x / canvas.width) * 0.6;
-
-            const y =
-                waterY +
-                Math.sin(x * freq + t * speed) * amp * perspective +
-                Math.cos(x * freq * 1.7 + t * speed * 0.7) * (amp * 0.4) * perspective;
-
-            x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            if (x === -200) ctx.moveTo(x, yy);
+            else ctx.lineTo(x, yy);
         }
 
         ctx.stroke();
@@ -475,34 +383,42 @@ function drawEvenWaves(waterY, t) {
     ctx.restore();
 }
 
+function drawCartoonRiverBank() {
+    const bankY = canvas.height * 0.55;
 
-// ─────────────────────────────────────────────
-// SUPER SOFT SPARKLES (barely noticeable)
-// ─────────────────────────────────────────────
-function drawSoftSparkles(waterY, t) {
-    ctx.save();
-    ctx.globalCompositeOperation = 'screen';
-    ctx.globalAlpha = 0.35;
+    // Brown soil strip
+    ctx.fillStyle = "#c28c42";
+    ctx.fillRect(0, bankY - 5, canvas.width, 10);
 
-    for (let i = 0; i < 12; i++) {
-        const x =
-            (canvas.width * (0.2 + i * 0.05) +
-                t * 26 * (0.5 + Math.sin(i * 0.4))) %
-            canvas.width;
-
-        const baseY = waterY + canvas.height * (0.045 + Math.sin(i * 0.25) * 0.02);
-        const y = baseY + Math.sin(t * 1.0 + i * 0.6) * 3;
-
-        const size = 1 + Math.sin(t * 1.3 + i * 0.3) * 0.8;
-
-        ctx.fillStyle = 'rgba(255,230,170,0.75)';
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
+    // Grass edge (wavy)
+    ctx.fillStyle = "#89c66f";
+    ctx.beginPath();
+    ctx.moveTo(0, bankY - 5);
+    for (let x = 0; x < canvas.width; x += 30) {
+        ctx.quadraticCurveTo(x + 15, bankY - 12,
+                             x + 30, bankY - 5);
     }
-
-    ctx.restore();
+    ctx.lineTo(canvas.width, bankY - 5);
+    ctx.closePath();
+    ctx.fill();
 }
+
+
+function drawRiver() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawCartoonSky();
+    drawCartoonFields();
+    drawCartoonRiverBank();
+    drawCartoonRiver();
+    updateUniversalPoem();
+}
+
+
+
+
+
+
 
 
 
