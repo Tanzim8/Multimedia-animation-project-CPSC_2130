@@ -926,22 +926,81 @@ canvas.addEventListener("click", (e) => {
 //Draw Waves------------
 
 
+
+let wavesVideo = document.createElement("video");
+wavesVideo.src = "images/waves2.mov"; 
+wavesVideo.loop = true;
+wavesVideo.muted = true;
+wavesVideo.autoplay = true;
+wavesVideo.playsInline = true;
+
+let wavesVideoReady = false;
+
+wavesVideo.addEventListener("canplay", () => {
+    wavesVideoReady = true;
+    wavesVideo.play(); 
+});
+
+
+wavesVideo.load();
+
+
+
+// function drawWaves() {
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+//     ctx.strokeStyle = "rgba(255,255,255,0.8)";
+//     ctx.lineWidth = 2;
+
+//     ctx.beginPath();
+//     ctx.moveTo(0, canvas.height / 2);
+
+//     for (let x = 0; x < canvas.width; x++) {
+//         let y = canvas.height / 2 +
+//             Math.sin(x * 0.02 + performance.now() * 0.003) * 40;
+//         ctx.lineTo(x, y);
+//     }
+//     ctx.stroke();
+//     updateUniversalPoem();
+// }
+// ==========================
+// SIMPLE WAVES SCENE WITH VIDEO
+// ==========================
+
 function drawWaves() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.8)";
-    ctx.lineWidth = 2;
-
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height / 2);
-
-    for (let x = 0; x < canvas.width; x++) {
-        let y = canvas.height / 2 +
-            Math.sin(x * 0.02 + performance.now() * 0.003) * 40;
-        ctx.lineTo(x, y);
+    
+    
+    if (wavesVideoReady) {
+        
+        ctx.drawImage(wavesVideo, 0, 0, canvas.width, canvas.height);
+        
+       
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+        
+        videoFailImage();
     }
-    ctx.stroke();
+    
+    
     updateUniversalPoem();
+}
+
+function videoFailImage() {
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1e3c72');
+    gradient.addColorStop(1, '#2a5298');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Waves Video Loading...', canvas.width / 2, canvas.height / 2);
 }
 
 // ==========================
@@ -979,7 +1038,18 @@ const scenes = [
         name: "Waves",
         poem: "Rise, fall, return again —\nthe rhythm of being.",
         audio: "audio/waves.mp3",
-        setup: () => { },
+        setup: function() {
+            
+            currentPoemIndex = 0;
+            poemFadeState = "fadeIn";
+            poemFadeProgress = 0;
+            
+            
+            if (wavesVideoReady) {
+                wavesVideo.currentTime = 0;
+                wavesVideo.play();
+            }
+        },
         draw: drawWaves
     }
 ];
