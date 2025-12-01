@@ -62,6 +62,8 @@ let CAR_H = 0;
 let lastCarSpawn = 0;
 
 
+
+
 let carImages = [];
 let carFiles = [
     "assets/cars/BlueCarR.png",
@@ -87,30 +89,38 @@ function spawnCar() {
     if (carImages.length === 0) return;
 
     const img = carImages[Math.floor(Math.random() * carImages.length)];
-
-    const goingRight = Math.random() > 0.5;
-    const scale = 0.15;
+    const scale = 0.12;
 
     const w = img.width * scale;
     const h = img.height * scale;
 
-    
-    const laneLeftToRight = canvas.height - 150;   
-    const laneRightToLeft = canvas.height - 80;   
+    // --- ROAD ALIGNMENT (PERFECT) ---
+    const roadHeight = 120;
+    const roadTop = canvas.height - roadHeight;
 
-    
-    const y = goingRight ? laneLeftToRight : laneRightToLeft;
+    // Where car wheels should touch
+    const groundY = canvas.height - 35;
+
+    // Two proper road lanes
+    const laneRight = groundY - 20;  // bottom lane
+    const laneLeft  = groundY - 70;  // top lane
+
+    // Determine direction
+    const goingRight = Math.random() > 0.5;
+
+    const y = goingRight ? laneRight : laneLeft;
 
     cars.push({
         img,
-        x: goingRight ? -w - 50 : canvas.width + 50,
-        y: y + (Math.random() * 8 - 4),  
+        x: goingRight ? -w - 60 : canvas.width + 60,
+        y,
         w,
         h,
         dir: goingRight ? 1 : -1,
         speed: 3 + Math.random() * 2
     });
 }
+
 
 
 function drawCar(c) {
@@ -148,41 +158,34 @@ function updateCars() {
     }
 }
 
-// CITY BACKGROUND
+
+
+// ---------------------------------------------------------
+// CITY SKYLINE SPRITE
+// ---------------------------------------------------------
+let skylineImg = new Image();
+skylineImg.src = "assets/buildings/buildings.png"; 
+let skylineReady = false;
+
+skylineImg.onload = () => {
+    skylineReady = true;
+};
+
+
+// ---------------------------------------------------------
+// CITY BACKGROUND (Sky, Clouds, Skyline, Road)
+// ---------------------------------------------------------
 function drawCityBackground() {
 
-    // BUILDINGS
-    if (!cityReady) {
-        cityBuildings = [];
+    // --- SKY ---
+    let sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    sky.addColorStop(0, "#14161c");
+    sky.addColorStop(0.6, "#1c1f26");
+    sky.addColorStop(1, "#2b2e38");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (let i = 0; i < 10; i++) {
-            let w = 140 + Math.random() * 120;
-            let h = 220 + Math.random() * 200;
-            let x = i * (canvas.width / 10);
-            let y = canvas.height - h - 150;
-
-            let windows = [];
-            let rows = Math.floor(h / 25);
-            let cols = Math.floor(w / 22);
-
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (Math.random() < 0.35) {
-                        windows.push({
-                            x: x + 10 + c * 22,
-                            y: y + 10 + r * 25
-                        });
-                    }
-                }
-            }
-
-            cityBuildings.push({ x, y, w, h, windows });
-        }
-
-        cityReady = true;
-    }
-
-    // SKY + CLOUDS
+    // --- CLOUDS ---
     if (!cloudReady) {
         clouds = [];
         for (let i = 0; i < 25; i++) {
@@ -196,57 +199,56 @@ function drawCityBackground() {
         }
         cloudReady = true;
     }
-
-    let sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    sky.addColorStop(0, "#14161c");
-    sky.addColorStop(0.6, "#1c1f26");
-    sky.addColorStop(1, "#2b2e38");
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     for (let c of clouds) {
         ctx.beginPath();
         ctx.fillStyle = `rgba(20,20,30,${c.a})`;
         ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
         ctx.fill();
-
         c.x += c.speed;
         if (c.x - c.r > canvas.width) c.x = -c.r;
     }
 
-    // BUILDINGS
-    for (let b of cityBuildings) {
-        ctx.fillStyle = "#0f1116";
-        ctx.fillRect(b.x, b.y, b.w, b.h);
+    // ===== FIXED ROAD HEIGHT =====
+    const roadHeight = 120;
 
-        ctx.fillStyle = "rgba(255,255,180,0.85)";
-        for (let w of b.windows) {
-            ctx.fillRect(w.x, w.y, 8, 12);
+    // --- SKYLINE SPRITE ---
+    if (skylineReady) {
+        const desiredHeight = canvas.height * 0.8;
+        const scale = desiredHeight / skylineImg.height;
+        const spriteWidth = skylineImg.width * scale;
+
+        // ===== FIXED SKYLINE ALIGNMENT =====
+        const y = canvas.height - roadHeight - (desiredHeight * .88);
+
+        for (let x = 0; x < canvas.width; x += spriteWidth) {
+            ctx.drawImage(skylineImg, x, y, spriteWidth, desiredHeight);
         }
     }
 
-    // ROAD
+    // --- ROAD ---
     ctx.fillStyle = "#1a1a1d";
-    ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+    ctx.fillRect(0, canvas.height - roadHeight, canvas.width, roadHeight);
 
     ctx.strokeStyle = "rgba(255,255,255,0.3)";
     ctx.lineWidth = 4;
     ctx.setLineDash([30, 25]);
     ctx.beginPath();
-    ctx.moveTo(0, canvas.height - 75);
-    ctx.lineTo(canvas.width, canvas.height - 75);
+    ctx.moveTo(0, canvas.height - roadHeight / 2);
+    ctx.lineTo(canvas.width, canvas.height - roadHeight / 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // WINDOW BORDER
+    // --- BORDER ---
     ctx.strokeStyle = "rgba(200,200,255,0.08)";
     ctx.lineWidth = 10;
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
 
-// DRAW RAIN SCENE
 
 
+// ---------------------------------------------------------
+// DRAW RAIN SCENE (Final render)
+// ---------------------------------------------------------
 function drawRain() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -269,79 +271,131 @@ function drawRain() {
     }
     ctx.stroke();
 
-
     updateUniversalPoem();
 }
 
-//RIVER SCENE
 
+
+
+//RIVER SCENE
+// ---------------------------------------------------------
+// SKY
+// ---------------------------------------------------------
 
 function drawCartoonSky() {
     // Sky gradient
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.4);
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.45);
     skyGrad.addColorStop(0, "#c5ecff");
     skyGrad.addColorStop(1, "#a7e0ff");
 
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.4);
+    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.45);
 
-    drawCartoonClouds();
-    drawCartoonMountains();
-    drawCartoonFields();
+    drawCloudLayer();
+    drawBackMountains();
 }
 
-function drawCartoonClouds() {
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    drawPuffyCloud(100, 70, 60);
-    drawPuffyCloud(canvas.width * 0.65, 90, 75);
-}
 
-function drawPuffyCloud(x, y, size) {
+// ---------------------------------------------------------
+// CLOUDS
+// ---------------------------------------------------------
+
+function drawBetterCloud(x, y, size) {
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
     ctx.beginPath();
+
     ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.arc(x + size * 0.6, y + size * 0.2, size * 0.8, 0, Math.PI * 2);
-    ctx.arc(x - size * 0.6, y + size * 0.3, size * 0.7, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.9, y + size * 0.1, size * 0.75, 0, Math.PI * 2);
+    ctx.arc(x - size * 0.9, y + size * 0.1, size * 0.65, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.4, y - size * 0.3, size * 0.6, 0, Math.PI * 2);
+    ctx.arc(x - size * 0.4, y - size * 0.25, size * 0.55, 0, Math.PI * 2);
+
     ctx.fill();
 }
 
-function drawCartoonMountains() {
-    ctx.fillStyle = "#8bc1a5";
+function drawCloudLayer() {
+    const t = performance.now() * 0.0001;
 
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height * 0.38);
-    ctx.quadraticCurveTo(canvas.width * 0.2, canvas.height * 0.28,
-                         canvas.width * 0.45, canvas.height * 0.38);
-    ctx.quadraticCurveTo(canvas.width * 0.75, canvas.height * 0.28,
-                         canvas.width, canvas.height * 0.38);
-    ctx.lineTo(canvas.width, canvas.height * 0.45);
-    ctx.lineTo(0, canvas.height * 0.45);
-    ctx.closePath();
-    ctx.fill();
+    for (let i = 0; i < 6; i++) {
+        const x = (i * 300 + t * (20 + i * 5)) % (canvas.width + 200) - 100;
+        const y = canvas.height * (0.10 + Math.sin(i * 0.5) * 0.03);
+        const size = 50 + i * 10;
+
+        drawBetterCloud(x, y, size);
+    }
 }
+
+
+// ---------------------------------------------------------
+// BLUE MOUNTAINS
+// ---------------------------------------------------------
+
+let mountainBlue = new Image();
+mountainBlue.src = "assets/Mountain/mountains.png";
+let mountainBlueReady = false;
+
+mountainBlue.onload = () => { mountainBlueReady = true; };
+
+function drawBackMountains() {
+    if (!mountainBlueReady) return;
+
+    const spriteH = mountainBlue.height;
+    const desiredH = canvas.height * 0.55;
+    const scale = desiredH / spriteH;
+
+    const spriteW = mountainBlue.width * scale;
+
+    // ✔ LOWERED so it touches the riverbank
+    const y = canvas.height * 0.65 - desiredH;
+
+    for (let x = 0; x < canvas.width; x += spriteW) {
+        ctx.drawImage(mountainBlue, x, y, spriteW, desiredH);
+    }
+}
+
+
+
+// ---------------------------------------------------------
+// FIELDS (foreground)
+// ---------------------------------------------------------
 
 function drawCartoonFields() {
-    // Main grass field
     ctx.fillStyle = "#b9e38a";
     ctx.fillRect(0, canvas.height * 0.45, canvas.width, canvas.height * 0.1);
+}
 
-    // Bush line
-    ctx.fillStyle = "#6ea05f";
+
+// ---------------------------------------------------------
+// RIVER BANK
+// ---------------------------------------------------------
+
+function drawCartoonRiverBank() {
+    const bankY = canvas.height * 0.55;
+
+    // Brown soil
+    ctx.fillStyle = "#c28c42";
+    ctx.fillRect(0, bankY - 5, canvas.width, 10);
+
+    // Grass edge
+    ctx.fillStyle = "#89c66f";
     ctx.beginPath();
-    ctx.moveTo(0, canvas.height * 0.45);
-    for (let x = 0; x < canvas.width; x += 40) {
-        ctx.quadraticCurveTo(x + 20, canvas.height * 0.42,
-                             x + 40, canvas.height * 0.45);
+    ctx.moveTo(0, bankY - 5);
+    for (let x = 0; x < canvas.width; x += 30) {
+        ctx.quadraticCurveTo(x + 15, bankY - 12, x + 30, bankY - 5);
     }
-    ctx.lineTo(canvas.width, canvas.height * 0.45);
+    ctx.lineTo(canvas.width, bankY - 5);
     ctx.closePath();
     ctx.fill();
 }
 
+
+// ---------------------------------------------------------
+// WATER + WAVES
+// ---------------------------------------------------------
 
 function drawCartoonRiver() {
     const waterTop = canvas.height * 0.55;
 
-    // Water gradient
     const grad = ctx.createLinearGradient(0, waterTop, 0, canvas.height);
     grad.addColorStop(0, "#8ed3f9");
     grad.addColorStop(0.5, "#6dbce8");
@@ -354,55 +408,134 @@ function drawCartoonRiver() {
     drawFlowingRipples(waterTop, t);
 }
 
-
 function drawFlowingRipples(waterTop, t) {
     ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.28)";
-    ctx.lineWidth = 1.6;
+
+    ctx.strokeStyle = "rgba(180, 250, 255, 0.85)";
+    ctx.lineWidth = 2;
     ctx.lineCap = "round";
 
-    const waveCount = 8;
-
-    for (let i = 0; i < waveCount; i++) {
-        const y = waterTop + 20 + i * 28;
+    const waves = 10;
+    for (let i = 0; i < waves; i++) {
+        const y = waterTop + 20 + i * 26;
+        const speed = 45 + i * 10;
+        const amp = 8 + i * 0.5;
+        const freq = 0.018 + i * 0.0015;
 
         ctx.beginPath();
+        for (let x = -200; x < canvas.width + 200; x += 10) {
+            const drift = t * speed;
+            const wave =
+                Math.sin((x + drift) * freq) * amp +
+                Math.cos((x + drift) * freq * 0.75) * (amp * 0.55);
 
-        for (let x = -200; x < canvas.width + 200; x += 20) {
-            const drift = t * 30;              // sideways movement
-            const curve = Math.sin((x + drift) * 0.015 + i) * 6;  // curved ripple
-            const yy = y + curve;
-
-            if (x === -200) ctx.moveTo(x, yy);
-            else ctx.lineTo(x, yy);
+            const yy = y + wave;
+            x === -200 ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy);
         }
-
         ctx.stroke();
     }
-
     ctx.restore();
 }
 
-function drawCartoonRiverBank() {
-    const bankY = canvas.height * 0.55;
 
-    // Brown soil strip
-    ctx.fillStyle = "#c28c42";
-    ctx.fillRect(0, bankY - 5, canvas.width, 10);
 
-    // Grass edge (wavy)
-    ctx.fillStyle = "#89c66f";
-    ctx.beginPath();
-    ctx.moveTo(0, bankY - 5);
-    for (let x = 0; x < canvas.width; x += 30) {
-        ctx.quadraticCurveTo(x + 15, bankY - 12,
-                             x + 30, bankY - 5);
+// ---------------------------------------------------------
+// FLOATING RIVER SPRITES (wood1, wood2)
+// ---------------------------------------------------------
+
+let floatSprites = [];
+let floatImages = [];
+
+const floatFiles = [
+    "assets/riverSprites/wood1.png",
+    "assets/riverSprites/wood3.png"
+];
+
+// Load the images
+function loadFloatingSprites() {
+    for (let src of floatFiles) {
+        const img = new Image();
+        img.src = src;
+        floatImages.push(img);
     }
-    ctx.lineTo(canvas.width, bankY - 5);
-    ctx.closePath();
-    ctx.fill();
+}
+loadFloatingSprites();
+
+
+// Spawn a floating object on the RIGHT side
+function spawnFloatingObject() {
+    if (floatImages.length === 0) return;
+
+    const img = floatImages[Math.floor(Math.random() * floatImages.length)];
+    const scale = 0.12;
+
+    floatSprites.push({
+        img: img,
+        x: canvas.width + 150,                    // START on the right
+        y: canvas.height * 0.59 + Math.random() * 40,
+        w: img.width * scale,
+        h: img.height * scale,
+        speed: 0.8 + Math.random() * 0.6,         // flow speed
+        bobSpeed: 0.002 + Math.random() * 0.003,  // bobbing rate
+        bobOffset: Math.random() * 99999          // unique wave phase
+    });
 }
 
+// Create a new floating object every 3 seconds
+setInterval(spawnFloatingObject, 3000);
+
+
+// Update + draw floating objects
+function updateFloatingObjects(t) {
+    for (let obj of floatSprites) {
+
+        // drift RIGHT → LEFT
+        obj.x -= obj.speed;
+
+        // loop back to right side when offscreen
+        if (obj.x < -200) {
+            obj.x = canvas.width + 150;
+            obj.y = canvas.height * 0.59 + Math.random() * 40;  // reset height randomness
+        }
+
+        // soft bobbing animation
+        obj.y += Math.sin(t * obj.bobSpeed + obj.bobOffset) * 0.3;
+
+        // draw object
+        ctx.drawImage(obj.img, obj.x, obj.y, obj.w, obj.h);
+    }
+}
+
+
+
+// ---------------------------------------------------------
+// FRONT GRASS SPRITE
+// ---------------------------------------------------------
+
+let grassSprite = new Image();
+grassSprite.src = "assets/grass/grass4.png";
+let grassReady = false;
+grassSprite.onload = () => { grassReady = true; };
+
+function drawGrassSprite() {
+    if (!grassReady) return;
+
+    const spriteHeight = 200;
+    const y = canvas.height - spriteHeight;
+
+    const scale = 0.08;
+    const spriteWidth = grassSprite.width * scale;
+
+    for (let x = 0; x < canvas.width; x += spriteWidth) {
+        ctx.drawImage(grassSprite, x, y, spriteWidth, spriteHeight);
+    }
+}
+
+
+
+// ---------------------------------------------------------
+// MAIN RIVER SCENE
+// ---------------------------------------------------------
 
 function drawRiver() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -411,8 +544,14 @@ function drawRiver() {
     drawCartoonFields();
     drawCartoonRiverBank();
     drawCartoonRiver();
+
+    // ✔ floating wood pieces drifting in water
+    updateFloatingObjects(performance.now());
+
+    drawGrassSprite();
     updateUniversalPoem();
 }
+
 
 
 
@@ -862,23 +1001,6 @@ wavesVideo.load();
 
 
 
-// function drawWaves() {
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//     ctx.strokeStyle = "rgba(255,255,255,0.8)";
-//     ctx.lineWidth = 2;
-
-//     ctx.beginPath();
-//     ctx.moveTo(0, canvas.height / 2);
-
-//     for (let x = 0; x < canvas.width; x++) {
-//         let y = canvas.height / 2 +
-//             Math.sin(x * 0.02 + performance.now() * 0.003) * 40;
-//         ctx.lineTo(x, y);
-//     }
-//     ctx.stroke();
-//     updateUniversalPoem();
-// }
 // ==========================
 // SIMPLE WAVES SCENE WITH VIDEO
 // ==========================
