@@ -24,7 +24,6 @@ let startTime = 0;
 const POEM_DISPLAY_TIME = 2000;
 const POEM_FADE_TIME = 500;
 
-
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 60; 
@@ -273,7 +272,6 @@ function drawRain() {
 
     updateUniversalPoem();
 }
-
 
 
 
@@ -557,11 +555,6 @@ function drawRiver() {
 
 
 
-
-
-
-
-
 // ==========================
 // UNDERWATER OCEAN + FISH
 // ==========================
@@ -669,55 +662,152 @@ function updateFish() {
             f.x = canvas.width + 60;
     }
 }
-// ==========================
-// UNDERWATER POEM 
-// ==========================
-let underwaterPoemLines = [
-    "In the deep blue silence,",
-    "where light dances with shadow,",
-    "Whispers of the ancient currents,",
-    "carry stories untold.",
-    "Fish dart like living jewels,",
-    "in liquid cathedral halls,",
-    "Each flicker of fin and scale,",
-    "a prayer to the depths.",
-    "The weight of oceans above,",
-    "holds dreams in gentle pressure,",
-    "And in this watery world,",
-    "we find our own reflection."
-];
 
 
 
 // ==========================
-// CUSTOM POEM FUNCTIONALITY
+// CUSTOM POEM FUNCTIONALITY (NO LOCALSTORAGE)
 // ==========================
-let customPoemEnabled = false;
-let userPoemLines = [];
-
-
-const poemMaker = document.getElementById('poemMaker');
-const addPoemBtn = document.getElementById('addPoemBtn');
-const closemaker = document.querySelector('.close');
-const customPoemTextarea = document.getElementById('customPoem');
-const savePoemBtn = document.getElementById('savePoem');
-const resetPoemBtn = document.getElementById('resetPoem');
-
+let poemMaker = document.getElementById('poemMaker');
+let addPoemBtn = document.getElementById('addPoemBtn');
+let closemaker = document.querySelector('.close');
+let customPoemTextarea = document.getElementById('customPoem');
+let savePoemBtn = document.getElementById('savePoem');
+let resetPoemBtn = document.getElementById('resetPoem');
 
 addPoemBtn.addEventListener('click', openpoemMaker);
 closemaker.addEventListener('click', closepoemMaker);
 savePoemBtn.addEventListener('click', saveCustomPoem);
 resetPoemBtn.addEventListener('click', resetToDefaultPoem);
 
-
-window.addEventListener('click', (e) => {
-    if (e.target === poemMaker) {
-        closepoemMaker();
-    }
+window.addEventListener('click', e => {
+    if (e.target === poemMaker) closepoemMaker();
 });
 
 // ==========================
-// UNIVERSAL POEM ANIMATION
+// DEFAULT POEM BLOCKS (2 Lines Each)
+// ==========================
+const rainPoems = [
+    ["Rain softens the hardest days,", "washing worries into quiet."],
+    ["Every drop writes a story,", "one the sky never tells aloud."],
+    ["Beneath cloudy sighs,", "hearts find room to breathe."],
+    ["Rain hums its lullaby,", "calming restless thoughts."],
+    ["A sky that cries,", "is a sky that heals."]
+];
+
+const riverPoems = [
+    ["The river remembers,", "what the mountains forget."],
+    ["Water carries time,", "stone carries silence."],
+    ["A drifting leaf knows,", "the patience of currents."],
+    ["The river hums softly,", "a song older than land."],
+    ["Flow finds a way,", "so must we."]
+];
+
+const wavesPoems = [
+    ["Waves return always,", "teaching the heart persistence."],
+    ["Salt winds carve stories,", "into wandering souls."],
+    ["The ocean breathes slow,", "reminding us to do the same."],
+    ["Every wave a beginning,", "every wave an ending."],
+    ["Foam whispers secrets,", "lost in the tides."]
+];
+
+// Ocean scene already in 2-line pairs
+const oceanPoems = [
+    ["In the deep blue silence,", "where light dances with shadow,"],
+    ["Whispers of the ancient currents,", "carry stories untold."],
+    ["Fish dart like living jewels,", "in liquid cathedral halls,"],
+    ["Each flicker of fin and scale,", "a prayer to the depths."],
+    ["The weight of oceans above,", "holds dreams in gentle pressure,"],
+    ["And in this watery world,", "we find our own reflection."]
+];
+
+// ==========================
+// POEM STORAGE (IN MEMORY ONLY)
+// ==========================
+let scenePoems = {
+    0: [...rainPoems],
+    1: [...riverPoems],
+    2: [...oceanPoems],
+    3: [...wavesPoems]
+};
+
+// ==========================
+// OPEN / CLOSE POEM MAKER
+// ==========================
+function openpoemMaker() {
+    poemMaker.style.display = 'block';
+
+    // Pre-fill with default lines of the scene
+    let active = scenePoems[currentScene];
+
+    customPoemTextarea.value = active.map(block => block.join("\n")).join("\n\n");
+}
+
+function closepoemMaker() {
+    poemMaker.style.display = 'none';
+}
+
+// ==========================
+// SAVE CUSTOM POEM (APPENDED TO ROTATION)
+// ==========================
+function saveCustomPoem() {
+    const text = customPoemTextarea.value.trim();
+    if (!text) return alert("Please write a poem!");
+
+    let lines = text.split("\n")
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+    if (lines.length < 2)
+        return alert("Write at least 2 lines.");
+
+    // Only use first 2 lines as one 2-line poem block
+    let poemBlock = [lines[0], lines[1]];
+
+    // Add to rotation
+    scenePoems[currentScene].push(poemBlock);
+
+    updateScenePoem();
+    closepoemMaker();
+}
+
+// ==========================
+// RESET TO DEFAULT POEMS
+// ==========================
+function resetToDefaultPoem() {
+    if (!confirm("Reset poems for this scene?")) return;
+
+    switch (currentScene) {
+        case 0: scenePoems[0] = [...rainPoems]; break;
+        case 1: scenePoems[1] = [...riverPoems]; break;
+        case 2: scenePoems[2] = [...oceanPoems]; break;
+        case 3: scenePoems[3] = [...wavesPoems]; break;
+    }
+
+    updateScenePoem();
+    closepoemMaker();
+}
+
+// ==========================
+// UPDATE CURRENT SCENE POEM
+// ==========================
+function updateScenePoem() {
+    currentPoemIndex = 0;
+    poemFadeState = "fadeIn";
+    poemFadeProgress = 0;
+    lastUpdate = 0;
+    startTime = 0;
+}
+
+// ==========================
+// GET CURRENT POEM BLOCK FOR DISPLAY
+// ==========================
+function getCurrentPoemLines() {
+    return scenePoems[currentScene][currentPoemIndex];
+}
+
+// ==========================
+// UNIVERSAL POEM FADE ANIMATION
 // ==========================
 function updateUniversalPoem() {
     const now = performance.now();
@@ -731,6 +821,12 @@ function updateUniversalPoem() {
     const delta = now - lastUpdate;
     lastUpdate = now;
 
+    let poems = scenePoems[currentScene];
+
+    if (currentPoemIndex >= poems.length)
+        currentPoemIndex = 0;
+
+    // Fade In
     if (poemFadeState === "fadeIn") {
         poemFadeProgress += delta / POEM_FADE_TIME;
         if (poemFadeProgress >= 1) {
@@ -739,188 +835,38 @@ function updateUniversalPoem() {
             startTime = now;
         }
     }
+
+    // Display
     else if (poemFadeState === "display") {
         if (now - startTime >= POEM_DISPLAY_TIME) {
             poemFadeState = "fadeOut";
-            poemFadeProgress = 1;
         }
     }
+
+    // Fade Out
     else if (poemFadeState === "fadeOut") {
         poemFadeProgress -= delta / POEM_FADE_TIME;
+
         if (poemFadeProgress <= 0) {
             poemFadeProgress = 0;
-            currentPoemIndex += 2;
+            currentPoemIndex++;
 
-            
-            const currentPoemLines = getCurrentPoemLines();
-
-            if (currentPoemIndex >= currentPoemLines.length) {
+            if (currentPoemIndex >= poems.length)
                 currentPoemIndex = 0;
-            }
+
             poemFadeState = "fadeIn";
         }
     }
 
     poemText.style.opacity = poemFadeProgress;
 
-    
-    const currentPoemLines = getCurrentPoemLines();
-    const line1 = currentPoemLines[currentPoemIndex] || "";
-    const line2 = currentPoemLines[currentPoemIndex + 1] || "";
+    let poem = getCurrentPoemLines();
+    const line1 = poem[0] || "";
+    const line2 = poem[1] || "";
+
     poemText.innerHTML = `${line1}<br>${line2}`;
 }
 
-function getCurrentPoemLines() {
-    
-    if (currentScene === 2) {
-        return CustomPoemList[2] ? scenePoems[2] : underwaterPoemLines;
-    }
-
-    
-    if (CustomPoemList[currentScene]) {
-        return scenePoems[currentScene];
-    } else {
-        
-        const defaultPoem = scenes[currentScene].poem;
-        return defaultPoem.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    }
-}
-
-function openpoemMaker() {
-    poemMaker.style.display = 'block';
-
-   
-    const sceneKey = `customPoem_scene_${currentScene}`;
-    const savedPoem = localStorage.getItem(sceneKey);
-
-    if (savedPoem) {
-        customPoemTextarea.value = savedPoem;
-    } else {
-        
-        if (currentScene === 2) { 
-            customPoemTextarea.value = underwaterPoemLines.join('\n');
-        } else {
-            customPoemTextarea.value = scenes[currentScene].poem;
-        }
-    }
-
-    
-    const sceneTitles = {
-        0: "Rain Scene Poem",
-        1: "River Scene Poem",
-        2: "Ocean Scene Poem",
-        3: "Waves Scene Poem"
-    };
-    document.querySelector('.maker-content h2').textContent = sceneTitles[currentScene] + " - Write Your Poem";
-}
-
-function closepoemMaker() {
-    poemMaker.style.display = 'none';
-}
-
-function saveCustomPoem() {
-    const poemText = customPoemTextarea.value.trim();
-
-    if (poemText) {
-        
-        const userLines = poemText.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-
-        if (userLines.length >= 2) {
-            
-            const sceneKey = `customPoem_scene_${currentScene}`;
-            localStorage.setItem(sceneKey, poemText);
-
-            
-            scenePoems[currentScene] = userLines;
-            CustomPoemList[currentScene] = true;
-
-            
-            updateScenePoem();
-
-            alert(`Your custom poem has been saved for the ${scenes[currentScene].name} scene!`);
-            closepoemMaker();
-        } else {
-            alert('Please write at least 2 lines for your poem.');
-        }
-    } else {
-        alert('Please write a poem before saving.');
-    }
-}
-// ==========================
-// SCENE-SPECIFIC POEM 
-// ==========================
-let scenePoems = {
-    0: [], 
-    1: [], 
-    2: [], 
-    3: []  
-};
-
-let CustomPoemList = {
-    0: false,
-    1: false,
-    2: false,
-    3: false
-};
-
-function loadAllCustomPoems() {
-    for (let i = 0; i < scenes.length; i++) {
-        const sceneKey = `customPoem_scene_${i}`;
-        const savedPoem = localStorage.getItem(sceneKey);
-        if (savedPoem) {
-            scenePoems[i] = savedPoem.split('\n')
-                .map(line => line.trim())
-                .filter(line => line.length > 0);
-            CustomPoemList[i] = scenePoems[i].length >= 2;
-        }
-    }
-}
-
-function updateScenePoem() {
-    const sceneKey = `customPoem_scene_${currentScene}`;
-    const savedPoem = localStorage.getItem(sceneKey);
-
-    if (savedPoem) {
-        scenePoems[currentScene] = savedPoem.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-        CustomPoemList[currentScene] = scenePoems[currentScene].length >= 2;
-    }
-
-   
-    currentPoemIndex = 0;
-    poemFadeState = "fadeIn";
-    poemFadeProgress = 0;
-    lastUpdate = 0;
-    startTime = 0;
-}
-
-function resetToDefaultPoem() {
-    if (confirm('Are you sure you want to reset to the default poem for this scene?')) {
-        const sceneKey = `customPoem_scene_${currentScene}`;
-        localStorage.removeItem(sceneKey);
-        CustomPoemList[currentScene] = false;
-        scenePoems[currentScene] = [];
-        customPoemTextarea.value = '';
-
-        updateScenePoem();
-        alert('Reset to default poem for this scene!');
-        closepoemMaker();
-    }
-}
-
-
-function loadCustomPoem() {
-    const savedPoem = localStorage.getItem('customUnderwaterPoem');
-    if (savedPoem) {
-        userPoemLines = savedPoem.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-        customPoemEnabled = userPoemLines.length >= 2;
-    }
-}
 
 
 
@@ -1041,6 +987,8 @@ function videoFailImage() {
     ctx.fillText('Waves Video Loading...', canvas.width / 2, canvas.height / 2);
 }
 
+
+
 // ==========================
 // SCENES SETUP
 // ==========================
@@ -1091,7 +1039,6 @@ const scenes = [
         draw: drawWaves
     }
 ];
-loadAllCustomPoems();
 
 document.body.addEventListener("click", () => {
     if (!userInteracted) {
