@@ -93,7 +93,7 @@ function spawnCar() {
     const w = img.width * scale;
     const h = img.height * scale;
 
-    // --- ROAD ALIGNMENT (PERFECT) ---
+    // --- ROAD ALIGNMENT  ---
     const roadHeight = 120;
     const roadTop = canvas.height - roadHeight;
 
@@ -159,9 +159,9 @@ function updateCars() {
 
 
 
-// ---------------------------------------------------------
+
 // CITY SKYLINE SPRITE
-// ---------------------------------------------------------
+
 let skylineImg = new Image();
 skylineImg.src = "assets/buildings/buildings.png"; 
 let skylineReady = false;
@@ -170,10 +170,8 @@ skylineImg.onload = () => {
     skylineReady = true;
 };
 
-
-// ---------------------------------------------------------
 // CITY BACKGROUND (Sky, Clouds, Skyline, Road)
-// ---------------------------------------------------------
+
 function drawCityBackground() {
 
     // --- SKY ---
@@ -207,7 +205,6 @@ function drawCityBackground() {
         if (c.x - c.r > canvas.width) c.x = -c.r;
     }
 
-    // ===== FIXED ROAD HEIGHT =====
     const roadHeight = 120;
 
     // --- SKYLINE SPRITE ---
@@ -216,7 +213,6 @@ function drawCityBackground() {
         const scale = desiredHeight / skylineImg.height;
         const spriteWidth = skylineImg.width * scale;
 
-        // ===== FIXED SKYLINE ALIGNMENT =====
         const y = canvas.height - roadHeight - (desiredHeight * .88);
 
         for (let x = 0; x < canvas.width; x += spriteWidth) {
@@ -245,9 +241,9 @@ function drawCityBackground() {
 
 
 
-// ---------------------------------------------------------
+
 // DRAW RAIN SCENE (Final render)
-// ---------------------------------------------------------
+
 function drawRain() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -276,9 +272,9 @@ function drawRain() {
 
 
 //RIVER SCENE
-// ---------------------------------------------------------
+
 // SKY
-// ---------------------------------------------------------
+
 
 function drawCartoonSky() {
     // Sky gradient
@@ -294,9 +290,7 @@ function drawCartoonSky() {
 }
 
 
-// ---------------------------------------------------------
 // CLOUDS
-// ---------------------------------------------------------
 
 function drawBetterCloud(x, y, size) {
     ctx.fillStyle = "rgba(255,255,255,0.95)";
@@ -324,9 +318,7 @@ function drawCloudLayer() {
 }
 
 
-// ---------------------------------------------------------
 // BLUE MOUNTAINS
-// ---------------------------------------------------------
 
 let mountainBlue = new Image();
 mountainBlue.src = "assets/Mountain/mountains.png";
@@ -353,9 +345,8 @@ function drawBackMountains() {
 
 
 
-// ---------------------------------------------------------
 // FIELDS (foreground)
-// ---------------------------------------------------------
+
 
 function drawCartoonFields() {
     ctx.fillStyle = "#b9e38a";
@@ -363,9 +354,8 @@ function drawCartoonFields() {
 }
 
 
-// ---------------------------------------------------------
 // RIVER BANK
-// ---------------------------------------------------------
+
 
 function drawCartoonRiverBank() {
     const bankY = canvas.height * 0.55;
@@ -387,9 +377,8 @@ function drawCartoonRiverBank() {
 }
 
 
-// ---------------------------------------------------------
+
 // WATER + WAVES
-// ---------------------------------------------------------
 
 function drawCartoonRiver() {
     const waterTop = canvas.height * 0.55;
@@ -437,9 +426,7 @@ function drawFlowingRipples(waterTop, t) {
 
 
 
-// ---------------------------------------------------------
 // FLOATING RIVER SPRITES (wood1, wood2)
-// ---------------------------------------------------------
 
 let floatSprites = [];
 let floatImages = [];
@@ -505,10 +492,8 @@ function updateFloatingObjects(t) {
 }
 
 
-
-// ---------------------------------------------------------
 // FRONT GRASS SPRITE
-// ---------------------------------------------------------
+
 
 let grassSprite = new Image();
 grassSprite.src = "assets/grass/grass4.png";
@@ -531,9 +516,8 @@ function drawGrassSprite() {
 
 
 
-// ---------------------------------------------------------
 // MAIN RIVER SCENE
-// ---------------------------------------------------------
+
 
 function drawRiver() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -543,7 +527,7 @@ function drawRiver() {
     drawCartoonRiverBank();
     drawCartoonRiver();
 
-    // ✔ floating wood pieces drifting in water
+    // floating wood pieces drifting in water
     updateFloatingObjects(performance.now());
 
     drawGrassSprite();
@@ -555,9 +539,8 @@ function drawRiver() {
 
 
 
-// ==========================
 // UNDERWATER OCEAN + FISH
-// ==========================
+
 
 
 
@@ -665,9 +648,8 @@ function updateFish() {
 
 
 
-// ==========================
-// CUSTOM POEM FUNCTIONALITY (NO LOCALSTORAGE)
-// ==========================
+// CUSTOM POEM FUNCTIONALITY 
+
 let poemMaker = document.getElementById('poemMaker');
 let addPoemBtn = document.getElementById('addPoemBtn');
 let closemaker = document.querySelector('.close');
@@ -684,9 +666,9 @@ window.addEventListener('click', e => {
     if (e.target === poemMaker) closepoemMaker();
 });
 
-// ==========================
+
 // DEFAULT POEM BLOCKS (2 Lines Each)
-// ==========================
+
 const rainPoems = [
     ["Rain softens the hardest days,", "washing worries into quiet."],
     ["Every drop writes a story,", "one the sky never tells aloud."],
@@ -711,7 +693,6 @@ const wavesPoems = [
     ["Foam whispers secrets,", "lost in the tides."]
 ];
 
-// Ocean scene already in 2-line pairs
 const oceanPoems = [
     ["In the deep blue silence,", "where light dances with shadow,"],
     ["Whispers of the ancient currents,", "carry stories untold."],
@@ -721,9 +702,9 @@ const oceanPoems = [
     ["And in this watery world,", "we find our own reflection."]
 ];
 
-// ==========================
+
 // POEM STORAGE (IN MEMORY ONLY)
-// ==========================
+
 let scenePoems = {
     0: [...rainPoems],
     1: [...riverPoems],
@@ -731,9 +712,9 @@ let scenePoems = {
     3: [...wavesPoems]
 };
 
-// ==========================
+
 // OPEN / CLOSE POEM MAKER
-// ==========================
+
 function openpoemMaker() {
     poemMaker.style.display = 'block';
 
@@ -747,9 +728,9 @@ function closepoemMaker() {
     poemMaker.style.display = 'none';
 }
 
-// ==========================
+
 // SAVE CUSTOM POEM (APPENDED TO ROTATION)
-// ==========================
+
 function saveCustomPoem() {
     const text = customPoemTextarea.value.trim();
     if (!text) return alert("Please write a poem!");
@@ -761,7 +742,6 @@ function saveCustomPoem() {
     if (lines.length < 2)
         return alert("Write at least 2 lines.");
 
-    // Only use first 2 lines as one 2-line poem block
     let poemBlock = [lines[0], lines[1]];
 
     // Add to rotation
@@ -771,9 +751,8 @@ function saveCustomPoem() {
     closepoemMaker();
 }
 
-// ==========================
 // RESET TO DEFAULT POEMS
-// ==========================
+
 function resetToDefaultPoem() {
     if (!confirm("Reset poems for this scene?")) return;
 
@@ -788,9 +767,8 @@ function resetToDefaultPoem() {
     closepoemMaker();
 }
 
-// ==========================
 // UPDATE CURRENT SCENE POEM
-// ==========================
+
 function updateScenePoem() {
     currentPoemIndex = 0;
     poemFadeState = "fadeIn";
@@ -799,16 +777,14 @@ function updateScenePoem() {
     startTime = 0;
 }
 
-// ==========================
 // GET CURRENT POEM BLOCK FOR DISPLAY
-// ==========================
+
 function getCurrentPoemLines() {
     return scenePoems[currentScene][currentPoemIndex];
 }
 
-// ==========================
 // UNIVERSAL POEM FADE ANIMATION
-// ==========================
+
 function updateUniversalPoem() {
     const now = performance.now();
 
@@ -947,9 +923,8 @@ wavesVideo.load();
 
 
 
-// ==========================
 // SIMPLE WAVES SCENE WITH VIDEO
-// ==========================
+
 
 function drawWaves() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -989,9 +964,8 @@ function videoFailImage() {
 
 
 
-// ==========================
 // SCENES SETUP
-// ==========================
+
 const scenes = [
     {
         name: "Rain",
@@ -1048,10 +1022,8 @@ document.body.addEventListener("click", () => {
     }
 });
 
-
-// ==========================
 // SCENE LOADING
-// ==========================
+
 function loadScene(index) {
     const s = scenes[index];
 
@@ -1080,9 +1052,11 @@ function loadScene(index) {
     s.setup();
     animateScene = s.draw;
 }
-// ==========================
+
+
+
 // BUTTONS
-// ==========================
+
 document.getElementById("nextScene").onclick = () => {
     currentScene = (currentScene + 1) % scenes.length;
     loadScene(currentScene);
@@ -1093,9 +1067,9 @@ document.getElementById("prevScene").onclick = () => {
     loadScene(currentScene);
 };
 
-// ==========================
+
 // MAIN LOOP
-// ==========================
+
 function animate() {
     if (animateScene) animateScene();
     requestAnimationFrame(animate);
